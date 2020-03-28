@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
@@ -27,7 +29,9 @@ func New(config Config) (*cobra.Command, error) {
 	f := &flag{}
 
 	r := &runner{
-		flag: f,
+		flag:   f,
+		stdin:  os.Stdin,
+		stdout: os.Stdout,
 	}
 
 	c := &cobra.Command{

@@ -4,18 +4,22 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"os"
+	"io"
 	"regexp"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/gg/pkg/formatter"
+	"github.com/giantswarm/gg/pkg/matcher"
 	"github.com/giantswarm/gg/pkg/splitter"
 )
 
 type runner struct {
-	flag *flag
+	flag   *flag
+	stdin  io.Reader
+	stdout io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -37,12 +41,19 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 
-	scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(r.stdin)
 	scanner.Split(splitter.New().Split)
 
-	var e *regexp.Regexp
+	var expressions [][]*regexp.Regexp
 	{
-		e = regexp.MustCompile(r.flag.grep)
+		for _, g := range r.flag.greps {
+			split := strings.Split(g, ":")
+
+			var pair []*regexp.Regexp
+			pair = append(pair, regexp.MustCompile(split[0]))
+			pair = append(pair, regexp.MustCompile(split[1]))
+			expressions = append(expressions, pair)
+		}
 	}
 
 	for scanner.Scan() {
@@ -63,13 +74,17 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// Filter the current line of the stream based on the given expression with
 		// the -g/--grep flag. We only want to print matching lines.
 		{
-			m := e.MatchString(l)
-			if !m {
+			match, err := matcher.Match(l, expressions)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if !match {
 				continue
 			}
 		}
 
-		fmt.Printf("%s", l)
+		fmt.Fprint(r.stdout, l)
 	}
 
 	err = scanner.Err()
