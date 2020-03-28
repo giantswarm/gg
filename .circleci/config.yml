@@ -6,8 +6,9 @@ orbs:
 workflows:
   test:
     jobs:
-      - architect/go-test:
-          name: go-test
+      - architect/go-build:
+          name: go-build
+          binary: gg
           filters:
             # Trigger job also on git tag.
             tags:
