@@ -13,14 +13,10 @@ const (
 )
 
 type Config struct {
-	Stderr io.Writer
 	Stdout io.Writer
 }
 
 func New(config Config) (*cobra.Command, error) {
-	if config.Stderr == nil {
-		config.Stderr = os.Stderr
-	}
 	if config.Stdout == nil {
 		config.Stdout = os.Stdout
 	}
@@ -29,7 +25,6 @@ func New(config Config) (*cobra.Command, error) {
 
 	r := &runner{
 		flag:   f,
-		stderr: config.Stderr,
 		stdout: config.Stdout,
 	}
 

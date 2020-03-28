@@ -8,11 +8,11 @@ const (
 	Text Format = "text"
 )
 
-func Is(s string) Format {
-	if len(s) == 0 {
+func Is(l string) Format {
+	if len(l) == 0 {
 		return None
 	}
-	if s[0] == '{' {
+	if l[0] == '{' {
 		return JSON
 	}
 

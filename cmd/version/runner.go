@@ -15,7 +15,6 @@ import (
 type runner struct {
 	flag   *flag
 	stdout io.Writer
-	stderr io.Writer
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
