@@ -1,19 +1,4 @@
-// Package ordered provided a type OrderedMap for use in JSON handling
-// although JSON spec says the keys order of an object should not matter
-// but sometimes when working with particular third-party proprietary code
-// which has incorrect using the keys order, we have to maintain the object keys
-// in the same order of incoming JSON object, this package is useful for these cases.
-//
-// Disclaimer:
-// same as Go's default [map](https://blog.golang.org/go-maps-in-action),
-// this OrderedMap is not safe for concurrent use, if need atomic access, may use a sync.Mutex to synchronize.
 package formatter
-
-// Refers
-//  JSON and Go        https://blog.golang.org/json-and-go
-//  Go-Ordered-JSON    https://github.com/virtuald/go-ordered-json
-//  Python OrderedDict https://github.com/python/cpython/blob/2.7/Lib/collections.py#L38
-//  port OrderedDict   https://github.com/cevaris/ordered_map
 
 import (
 	"bytes"
@@ -34,7 +19,23 @@ type KVPair struct {
 
 // OrderedMap has similar operations as the default map, but maintains the order
 // of inserted keys. Similar to map, all single key operations e.g. get, set and
-// delete runs at O(1).
+// delete runs at O(1). Although the JSON spec says the keys order of an object
+// should not matter, sometimes the order of JSON objects and their keys matters
+// when printing them for humans. Therefore we have to maintain the object keys
+// in the same order as they come in.
+//
+// Disclaimer, same as Go's default map, OrderedMap is not safe for concurrent
+// use. If you need atomic access, may use a sync.Mutex to synchronize.
+//
+// More references may be found below.
+//
+//     Go maps in action     https://blog.golang.org/go-maps-in-action
+//     JSON and Go           https://blog.golang.org/json-and-go
+//     Go-Ordered-JSON       https://github.com/virtuald/go-ordered-json
+//     Python OrderedDict    https://github.com/python/cpython/blob/2.7/Lib/collections.py#L38
+//     port OrderedDict      https://github.com/cevaris/ordered_map
+//     original proposal     https://gitlab.com/c0b/go-ordered-json/-/blob/49bbdab258c2e707b671515c36308ea48134970d/ordered.go
+//
 type OrderedMap struct {
 	m    map[string]interface{}
 	l    *list.List

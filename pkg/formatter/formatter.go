@@ -84,7 +84,6 @@ func Fields(l string, fields []string) (string, error) {
 	for _, e := range expressions {
 		for k, v := range m {
 			if e.MatchString(k) {
-
 				if k == "time" {
 					t, err := time.Parse(timeFormatFrom, v)
 					if err != nil {
