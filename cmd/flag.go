@@ -9,19 +9,21 @@ import (
 )
 
 type flag struct {
-	fields []string
-	greps  []string
-	output string
+	fields  []string
+	group   string
+	output  string
+	selects []string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringSliceVarP(&f.fields, "field", "f", nil, "Fields the output lines should contain only.")
-	cmd.PersistentFlags().StringSliceVarP(&f.greps, "grep", "g", nil, "Grep for lines based on the given key:val regular expression.")
+	cmd.PersistentFlags().StringVarP(&f.group, "group", "g", "", "Group logs by inserting an empty line after the group end.")
 	cmd.PersistentFlags().StringVarP(&f.output, "output", "o", "json", "Output format, either json or text.")
+	cmd.PersistentFlags().StringSliceVarP(&f.selects, "select", "s", nil, "Select lines based on the given key:val regular expression.")
 }
 
 func (f *flag) Validate() error {
-	// Validate -f/--fields flags.
+	// Validate -f/--field flags.
 	for _, f := range f.fields {
 		if f == "" {
 			return microerror.Maskf(invalidFlagsError, "-f/--field must not be empty")
@@ -32,19 +34,11 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	// Validate -g/--grep flags.
-	for _, g := range f.greps {
-		split := strings.Split(g, ":")
-
-		if len(split) != 2 {
-			return microerror.Maskf(invalidFlagsError, "%#q must have format key:val", g)
-		}
-
-		for _, s := range split {
-			_, err := regexp.Compile(s)
-			if err != nil {
-				return microerror.Mask(err)
-			}
+	// Validate -g/--group flag.
+	if f.group != "" {
+		_, err := regexp.Compile(f.group)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 	}
 
@@ -55,6 +49,22 @@ func (f *flag) Validate() error {
 		}
 		if f.output != "json" && f.output != "text" {
 			return microerror.Maskf(invalidFlagsError, "-o/--output must either be text or json")
+		}
+	}
+
+	// Validate -s/--select flags.
+	for _, s := range f.selects {
+		split := strings.Split(s, ":")
+
+		if len(split) != 2 {
+			return microerror.Maskf(invalidFlagsError, "-s/--select must have format key:val")
+		}
+
+		for _, s := range split {
+			_, err := regexp.Compile(s)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 	}
 
