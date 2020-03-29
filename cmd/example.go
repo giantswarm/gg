@@ -30,4 +30,8 @@ var example = `    The following examples make use of a test.json file which con
     matching "lo". This can be used to e.g. group resource logs by their
     reconciliation "loop".
 
-        cat test.json | gg -s obj:qihx8 -s res:dra -f ti,mes -g lo`
+        cat test.json | gg -s obj:qihx8 -s res:dra -f ti,mes -g lo
+
+    Display the list of resources executed for a given CR.
+
+        cat test.json | gg -s obj:qihx8 -s con:mac -f res -o text -g lo | uniq`

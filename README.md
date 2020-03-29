@@ -50,6 +50,10 @@ Examples:
 
         cat test.json | gg -s obj:qihx8 -s res:dra -f ti,mes -g lo
 
+    Display the list of resources executed for a given CR.
+
+        cat test.json | gg -s obj:qihx8 -s con:mac -f res -o text -g lo | uniq
+
 Available Commands:
   help        Help about any command
   version     Print version information.

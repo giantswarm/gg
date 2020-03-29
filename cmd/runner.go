@@ -47,6 +47,34 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		l := scanner.Text()
 
 		// Filter the current line of the stream based on the given expression with
+		// the -f/--field flag. We do not want to print lines that do not have the
+		// fields we want to display.
+		{
+			match, err := matcher.Match(l, matcher.Exp(r.flag.fields))
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if !match {
+				continue
+			}
+		}
+
+		// Filter the current line of the stream based on the given expression with
+		// the -g/--group flag. We do not want to print lines that do not have the
+		// fields we want to group by.
+		{
+			match, err := matcher.Match(l, matcher.Exp([]string{r.flag.group}))
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if !match {
+				continue
+			}
+		}
+
+		// Filter the current line of the stream based on the given expression with
 		// the -s/--select flag. We only want to print matching lines.
 		{
 			match, err := matcher.Match(l, r.flag.selects)
