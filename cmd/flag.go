@@ -23,12 +23,20 @@ func (f *flag) Init(cmd *cobra.Command) {
 }
 
 func (f *flag) Validate() error {
-	// Validate -f/--fields flags.
+	// Validate -f/--field flags.
 	for _, f := range f.fields {
 		if f == "" {
 			return microerror.Maskf(invalidFlagsError, "-f/--field must not be empty")
 		}
 		_, err := regexp.Compile(f)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	// Validate -g/--group flag.
+	if f.group != "" {
+		_, err := regexp.Compile(f.group)
 		if err != nil {
 			return microerror.Mask(err)
 		}
