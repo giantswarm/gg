@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement grepping using regular expressions via the `-g` or `--grep` flag.
 - Make multiple fuzzy grepping generic.
 - Implement colourized field formatting.
+- Add usage info to readme.
 
 
 
