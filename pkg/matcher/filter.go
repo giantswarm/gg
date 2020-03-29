@@ -8,11 +8,11 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-func Match(l string, greps []string) (bool, error) {
+func Match(l string, selects []string) (bool, error) {
 	var expressions [][]*regexp.Regexp
 	{
-		for _, g := range greps {
-			split := strings.Split(g, ":")
+		for _, s := range selects {
+			split := strings.Split(s, ":")
 
 			var pair []*regexp.Regexp
 			pair = append(pair, regexp.MustCompile(split[0]))
@@ -41,6 +41,24 @@ func Match(l string, greps []string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func Value(l string, s string) (string, error) {
+	var m map[string]string
+	err := json.Unmarshal([]byte(l), &m)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	expression := regexp.MustCompile(s)
+
+	for k, v := range m {
+		if expression.MatchString(k) {
+			return v, nil
+		}
+	}
+
+	return "", nil
 }
 
 func pairMatchesMapping(pair []*regexp.Regexp, m map[string]string) bool {

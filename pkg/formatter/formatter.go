@@ -14,14 +14,6 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-type Format string
-
-const (
-	JSON Format = "json"
-	None Format = "none"
-	Text Format = "text"
-)
-
 const (
 	timeFormatFrom = "2006-01-02T15:04:05.999999-07:00"
 	timeFormatTo   = "15:04:05"
@@ -104,17 +96,6 @@ func Fields(l string, fields []string) (string, error) {
 	}
 
 	return fmt.Sprintf("%s\n", newFormat), nil
-}
-
-func Is(l string) Format {
-	if len(l) == 0 {
-		return None
-	}
-	if l[0] == '{' {
-		return JSON
-	}
-
-	return Text
 }
 
 func Output(l string, output string) (string, error) {
