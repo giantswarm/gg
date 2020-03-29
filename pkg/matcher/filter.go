@@ -3,11 +3,24 @@ package matcher
 import (
 	"encoding/json"
 	"regexp"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 )
 
-func Match(l string, expressions [][]*regexp.Regexp) (bool, error) {
+func Match(l string, greps []string) (bool, error) {
+	var expressions [][]*regexp.Regexp
+	{
+		for _, g := range greps {
+			split := strings.Split(g, ":")
+
+			var pair []*regexp.Regexp
+			pair = append(pair, regexp.MustCompile(split[0]))
+			pair = append(pair, regexp.MustCompile(split[1]))
+			expressions = append(expressions, pair)
+		}
+	}
+
 	var m map[string]string
 	err := json.Unmarshal([]byte(l), &m)
 	if err != nil {

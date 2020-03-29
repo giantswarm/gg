@@ -38,6 +38,7 @@ func New(config Config) (*cobra.Command, error) {
 		Use:          project.Name(),
 		Short:        project.Description(),
 		Long:         project.Description(),
+		Example:      example,
 		RunE:         r.Run,
 		SilenceUsage: true,
 	}
