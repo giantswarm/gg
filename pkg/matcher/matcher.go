@@ -8,6 +8,23 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
+// Exp is used to transform single key expressions into key-value expressions as
+// expected by Match. Single key expressions are given e.g. via -f/--field and
+// -g/--group which we want to match for implicitly.
+func Exp(list []string) []string {
+	var pairs []string
+
+	for _, s := range list {
+		split := strings.Split(s, ":")
+
+		if len(split) == 1 {
+			pairs = append(pairs, s+":.*")
+		}
+	}
+
+	return pairs
+}
+
 func Match(l string, selects []string) (bool, error) {
 	var expressions [][]*regexp.Regexp
 	{

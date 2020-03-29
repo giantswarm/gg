@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add usage info to readme.
 - Rename `-g` and `--grep` flags to `-s` and `--select`.
 - Group output logs using regular expressions via the `-g` or `--group` flag.
+- Implicitly filter based on given fields and group.
 
 
 
