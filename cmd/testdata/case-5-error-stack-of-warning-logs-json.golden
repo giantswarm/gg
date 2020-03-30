@@ -1,0 +1,1 @@
+{ "resource": "tccpvpcpcx" "stack": "[{/go/src/github.com/giantswarm/aws-operator/vendor/github.com/giantswarm/operatorkit/resource/wrapper/retryresource/basic_resource.go:52: } {/go/src/github.com/giantswarm/aws-operator/service/controller/resource/tccpvpcpcx/create.go:67: expected one vpc, got 2} {execution failed error}]" }

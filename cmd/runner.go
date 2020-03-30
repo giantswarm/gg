@@ -39,12 +39,47 @@ func (r *runner) Run(cmd *cobra.Command, args []string) error {
 func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) error {
 	var err error
 	var group string
+	var isErr bool
+	var hasNewLine bool
 
 	scanner := bufio.NewScanner(r.stdin)
 	scanner.Split(splitter.New().Split)
 
 	for scanner.Scan() {
 		l := scanner.Text()
+
+		// Check if the current line of the stream has the expected format of our
+		// JSON log objects. If it does not appear to be valid JSON, we simply print
+		// the line as it is.
+		//
+		// Note that for invalid JSON messages we print an extra line before and
+		// after the printed text. In this case we remember that an empty line got
+		// already printed, so that further grouping of logs doesn't introduce any
+		// unnecessary padding.
+		{
+			if l[0] != '{' {
+				if !hasNewLine {
+					fmt.Fprint(r.stdout, "\n")
+				}
+				fmt.Fprint(r.stdout, l)
+				fmt.Fprint(r.stdout, "\n")
+
+				hasNewLine = true
+
+				continue
+			}
+		}
+
+		// We want to print error logs differently. Therefore we check if the
+		// current line of the stream is what we expect to be an error log early on
+		// in the processing so that relevant information for detection are not
+		// removed before we get the chance to inspect the complete line.
+		{
+			isErr, err = formatter.IsErr(l)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
 
 		// Filter the current line of the stream based on the given expression with
 		// the -f/--field flag. We do not want to print lines that do not have the
@@ -105,8 +140,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 			// As soon as we find a new group value we insert an empty line and
 			// remember the new group value.
+			//
+			// Note that a new line is only inserted in case no invalid JSON got
+			// detected. This is to prevent unnecessary extra padding.
 			if value != group {
-				fmt.Fprint(r.stdout, "\n")
+				if !hasNewLine {
+					fmt.Fprint(r.stdout, "\n")
+				}
 				group = value
 			}
 		}
@@ -140,7 +180,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// order to make them colorful. This implies that the JSON strings do not
 		// contain valid JSON objects anymore. Therefore all JSON object related
 		// operations must have been done at this point.
-		{
+		if isErr {
+			newLine, err := formatter.Error(l, r.flag.output)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			l = newLine
+		} else {
 			newLine, err := formatter.Colour(l, r.flag.output)
 			if err != nil {
 				return microerror.Mask(err)
@@ -149,7 +196,15 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			l = newLine
 		}
 
-		fmt.Fprint(r.stdout, l)
+		// Finally we print the current line of the stream based on its processed
+		// selection and transformation.
+		//
+		// Note that we reset hasNewLine again to start all over with the detection
+		// of extra padding. This is basically for eye candy reasons.
+		{
+			hasNewLine = false
+			fmt.Fprint(r.stdout, l)
+		}
 	}
 
 	err = scanner.Err()
