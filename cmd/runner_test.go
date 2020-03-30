@@ -105,6 +105,7 @@ func Test_Cmd_run(t *testing.T) {
 				selects: []string{
 					"obj:qihx8",
 					"con:mac",
+					"res:.*",
 				},
 			},
 			fixture: "basic.json",
@@ -114,6 +115,21 @@ func Test_Cmd_run(t *testing.T) {
 			flag: &flag{
 				fields: []string{
 					"res",
+					"sta",
+				},
+				output: "json",
+				selects: []string{
+					"lev:war",
+				},
+			},
+			fixture: "error.json",
+		},
+		{
+			name: "case 6, error stack of warning logs with annotation, json",
+			flag: &flag{
+				fields: []string{
+					"res",
+					"ann",
 					"sta",
 				},
 				output: "json",

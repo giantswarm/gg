@@ -84,13 +84,18 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// Filter the current line of the stream based on the given expression with
 		// the -f/--field flag. We do not want to print lines that do not have the
 		// fields we want to display.
+		//
+		// TODO we check !isErr when checking for a match which is because of legacy
+		// microerror structures where the annotation is magically reverse
+		// engineered from the legacy stack. Once we do not have to deal with these
+		// legacy structures we can remove the !isErr check.
 		{
 			match, err := matcher.Match(l, matcher.Exp(r.flag.fields))
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			if !match {
+			if !isErr && !match {
 				continue
 			}
 		}
@@ -181,7 +186,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// contain valid JSON objects anymore. Therefore all JSON object related
 		// operations must have been done at this point.
 		if isErr {
-			newLine, err := formatter.Error(l, r.flag.output)
+			newLine, err := formatter.Error(l, r.flag.output, r.flag.fields)
 			if err != nil {
 				return microerror.Mask(err)
 			}
