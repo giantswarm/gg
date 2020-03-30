@@ -177,7 +177,7 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 
 						annotation := regexp.MustCompile(`: [^"][^0-9].*}?`).FindString(stack)
 						stack = strings.Replace(stack, annotation, "", -1)
-						annotation = annotation[2:len(annotation)]
+						annotation = annotation[2:]
 
 						var expressions []*regexp.Regexp
 						for _, f := range fields {
