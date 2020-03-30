@@ -1,0 +1,57 @@
+accountid    finding the control plane's AWS account ID
+accountid    found the control plane's AWS account ID `075252227282`
+accountid    finding the tenant cluster's AWS account ID
+accountid    found the tenant cluster's AWS account ID `075252227282`
+cproutetables    finding cached route tables
+cproutetables    found cached route tables
+cpvpc    finding cached vpc info for `platypus`
+cpvpc    found cached vpc info `172.30.33.0/24` for `platypus`
+tccpnatgateways    finding natgateways
+tccpnatgateways    found natgateways
+tccpnatgateways    found 1 natgateways for tenant cluster `hixh7`
+tccpsecuritygroups    finding security groups for tenant cluster `hixh7`
+tccpsecuritygroups    found security groups for tenant cluster `hixh7`
+tccpvpcid    finding vpcs
+tccpvpcid    found vpcs
+tccpvpcid    finding vpc id for tenant cluster `hixh7`
+tccpvpcid    found vpc id `vpc-041c1ccc4b88caca8` for tenant cluster `hixh7`
+tccpvpcpcx    finding vpc peering connections
+tccpvpcpcx    found vpc peering connections
+tccpvpcpcx    finding vpc peering connection id for tenant cluster `hixh7`
+tccpvpcpcx    retrying due to error
+tccpvpcpcx    finding vpc peering connections
+tccpvpcpcx    found vpc peering connections
+tccpvpcpcx    finding vpc peering connection id for tenant cluster `hixh7`
+tccpvpcpcx    retrying due to error
+tccpvpcpcx    finding vpc peering connections
+tccpvpcpcx    found vpc peering connections
+tccpvpcpcx    finding vpc peering connection id for tenant cluster `hixh7`
+
+accountid    finding the control plane's AWS account ID
+accountid    found the control plane's AWS account ID `075252227282`
+accountid    finding the tenant cluster's AWS account ID
+accountid    found the tenant cluster's AWS account ID `075252227282`
+cproutetables    finding cached route tables
+cproutetables    found cached route tables
+cpvpc    finding cached vpc info for `platypus`
+cpvpc    found cached vpc info `172.30.33.0/24` for `platypus`
+tccpnatgateways    finding natgateways
+tccpnatgateways    found natgateways
+tccpnatgateways    found 1 natgateways for tenant cluster `hixh7`
+tccpsecuritygroups    finding security groups for tenant cluster `hixh7`
+tccpsecuritygroups    found security groups for tenant cluster `hixh7`
+tccpvpcid    finding vpcs
+tccpvpcid    found vpcs
+tccpvpcid    finding vpc id for tenant cluster `hixh7`
+tccpvpcid    found vpc id `vpc-041c1ccc4b88caca8` for tenant cluster `hixh7`
+tccpvpcpcx    finding vpc peering connections
+tccpvpcpcx    found vpc peering connections
+tccpvpcpcx    finding vpc peering connection id for tenant cluster `hixh7`
+tccpvpcpcx    retrying due to error
+tccpvpcpcx    finding vpc peering connections
+tccpvpcpcx    found vpc peering connections
+tccpvpcpcx    finding vpc peering connection id for tenant cluster `hixh7`
+tccpvpcpcx    retrying due to error
+tccpvpcpcx    finding vpc peering connections
+tccpvpcpcx    found vpc peering connections
+tccpvpcpcx    finding vpc peering connection id for tenant cluster `hixh7`

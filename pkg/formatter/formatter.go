@@ -1,12 +1,9 @@
 package formatter
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"regexp"
-	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -20,44 +17,32 @@ const (
 )
 
 const (
-	indent       = 0
-	initialDepth = 0
-	valueSep     = ","
-	null         = "null"
-	startMap     = "{"
-	endMap       = "}"
-	startArray   = "["
-	endArray     = "]"
+	startMap = "{"
+	endMap   = "}"
 )
 
 var (
-	colorKey    = color.New(color.FgHiBlue)
-	colorString = color.New(color.FgGreen)
-	colorBool   = color.New(color.FgYellow)
-	colorNumber = color.New(color.FgCyan)
-	colorNull   = color.New(color.FgMagenta)
+	colorKey    = color.New(color.FgHiBlue).SprintFunc()
+	colorString = color.New(color.FgGreen).SprintFunc()
+	colorError  = color.New(color.FgRed).SprintFunc()
 )
 
 func Colour(l string, output string) (string, error) {
-	if output == "json" {
-		newMap := NewOrderedMap()
-		err := json.Unmarshal([]byte(l), &newMap)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-
-		buffer := bytes.Buffer{}
-		marshalValue(newMap, &buffer, initialDepth)
-
-		return buffer.String() + "\n", nil
+	s, err := colour(l, output, colorString)
+	if err != nil {
+		return "", microerror.Mask(err)
 	}
 
-	var values []string
-	for _, v := range strings.Split(l, " ") {
-		values = append(values, sprintColor(colorString, v))
+	return s, nil
+}
+
+func Error(l string, output string) (string, error) {
+	s, err := colour(l, output, colorError)
+	if err != nil {
+		return "", microerror.Mask(err)
 	}
 
-	return strings.Join(values, " "), nil
+	return s, nil
 }
 
 func Fields(l string, fields []string) (string, error) {
@@ -72,7 +57,7 @@ func Fields(l string, fields []string) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	newMap := NewOrderedMap()
+	om := NewOrderedMap()
 	for _, e := range expressions {
 		for k, v := range m {
 			if e.MatchString(k) {
@@ -85,12 +70,12 @@ func Fields(l string, fields []string) (string, error) {
 					v = t.Format(timeFormatTo)
 				}
 
-				newMap.Set(k, v)
+				om.Set(k, v)
 			}
 		}
 	}
 
-	newFormat, err := json.Marshal(newMap)
+	newFormat, err := json.Marshal(om)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -98,138 +83,74 @@ func Fields(l string, fields []string) (string, error) {
 	return fmt.Sprintf("%s\n", newFormat), nil
 }
 
+func IsErr(l string) (bool, error) {
+	om := NewOrderedMap()
+	err := json.Unmarshal([]byte(l), &om)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	isErr := om.Has("level") && om.Get("level") == "error"
+	isWar := om.Has("level") && om.Get("level") == "warning"
+
+	return isErr || isWar, nil
+}
+
 func Output(l string, output string) (string, error) {
 	if output == "json" {
 		return l, nil
 	}
 
-	newMap := NewOrderedMap()
-	err := json.Unmarshal([]byte(l), &newMap)
+	om := NewOrderedMap()
+	err := json.Unmarshal([]byte(l), &om)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	return strings.Join(newMap.Values(), "    ") + "\n", nil
+	return strings.Join(om.Values(), "    ") + "\n", nil
 }
 
-func marshalArray(a []interface{}, buf *bytes.Buffer, depth int) {
-	if len(a) == 0 {
-		buf.WriteString(startArray + endArray)
-		return
-	}
-
-	buf.WriteString(startArray)
-	writeObjSep(buf)
-
-	for i, v := range a {
-		writeIndent(buf, depth+1)
-		marshalValue(v, buf, depth+1)
-		if i < len(a)-1 {
-			buf.WriteString(valueSep)
+func colour(l string, output string, colour func(v ...interface{}) string) (string, error) {
+	if output == "json" {
+		om := NewOrderedMap()
+		err := json.Unmarshal([]byte(l), &om)
+		if err != nil {
+			return "", microerror.Mask(err)
 		}
-		writeObjSep(buf)
-	}
-	writeIndent(buf, depth)
-	buf.WriteString(endArray)
-}
 
-func marshalMap(m map[string]interface{}, buf *bytes.Buffer, depth int) {
-	remaining := len(m)
-
-	if remaining == 0 {
-		buf.WriteString(startMap + endMap)
-		return
-	}
-
-	keys := make([]string, 0)
-	for key := range m {
-		keys = append(keys, key)
-	}
-
-	sort.Strings(keys)
-
-	buf.WriteString(startMap)
-	writeObjSep(buf)
-
-	for _, key := range keys {
-		writeIndent(buf, depth+1)
-		buf.WriteString(colorKey.Sprintf("\"%s\"", key) + ": ")
-		marshalValue(m[key], buf, depth+1)
-		remaining--
-		if remaining != 0 {
-			buf.WriteString(valueSep)
+		if om.Len() == 0 {
+			return startMap + endMap, nil
 		}
-		writeObjSep(buf)
-	}
-	writeIndent(buf, depth)
-	buf.WriteString(endMap)
-}
 
-func marshalOrderedMap(om *OrderedMap, buf *bytes.Buffer, depth int) {
-	remaining := om.Len()
+		keys := om.Keys()
 
-	if remaining == 0 {
-		buf.WriteString(startMap + endMap)
-		return
-	}
+		var s string
 
-	keys := om.Keys()
+		s += startMap
+		s += " "
 
-	buf.WriteString(startMap)
-	writeObjSep(buf)
+		for _, key := range keys {
+			s += colorKey("\"", key, "\"") + ": "
 
-	for _, key := range keys {
-		writeIndent(buf, depth+1)
-		buf.WriteString(colorKey.Sprintf("\"%s\"", key) + ": ")
-		marshalValue(om.Get(key), buf, depth+1)
-		remaining--
-		if remaining != 0 {
-			buf.WriteString(valueSep)
+			b, err := json.Marshal(om.Get(key))
+			if err != nil {
+				return "", microerror.Mask(err)
+			}
+
+			s += colour(string(b))
+			s += " "
 		}
-		writeObjSep(buf)
+
+		s += endMap
+		s += "\n"
+
+		return s, nil
 	}
-	writeIndent(buf, depth)
-	buf.WriteString(endMap)
-}
 
-func marshalString(str string, buf *bytes.Buffer) {
-	strBytes, _ := json.Marshal(str)
-	str = string(strBytes)
-
-	buf.WriteString(sprintColor(colorString, str))
-}
-
-func marshalValue(val interface{}, buf *bytes.Buffer, depth int) {
-	switch v := val.(type) {
-	case *OrderedMap:
-		marshalOrderedMap(v, buf, depth)
-	case map[string]interface{}:
-		marshalMap(v, buf, depth)
-	case []interface{}:
-		marshalArray(v, buf, depth)
-	case string:
-		marshalString(v, buf)
-	case float64:
-		buf.WriteString(sprintColor(colorNumber, strconv.FormatFloat(v, 'f', -1, 64)))
-	case bool:
-		buf.WriteString(sprintColor(colorBool, (strconv.FormatBool(v))))
-	case nil:
-		buf.WriteString(sprintColor(colorNull, null))
+	var values []string
+	for _, v := range strings.Split(l, " ") {
+		values = append(values, colour(v))
 	}
-}
 
-func sprintColor(c *color.Color, s string) string {
-	return c.SprintFunc()(s)
-}
-
-func writeIndent(buf *bytes.Buffer, depth int) {
-	buf.WriteString(strings.Repeat(" ", indent*depth))
-}
-
-func writeObjSep(buf *bytes.Buffer) {
-	if indent != 0 {
-		buf.WriteByte('\n')
-	} else {
-		buf.WriteByte(' ')
-	}
+	return strings.Join(values, " "), nil
 }
