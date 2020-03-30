@@ -1,5 +1,6 @@
 {
     "resource": "tccpvpcpcx",
+    "annotation": "testError",
     "stack": [
         { "file": "--REPLACED--/create.go", "line": 89 },
         { "file": "--REPLACED--/create.go", "line": 90 },
@@ -8,6 +9,7 @@
 }
 {
     "resource": "tccpvpcpcx",
+    "annotation": "expected one vpc, got 2, execution failed error",
     "stack": [
         { "file": "--REPLACED--/create.go", "line": 52 },
         { "file": "--REPLACED--/create.go", "line": 67 }
