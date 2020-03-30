@@ -17,13 +17,8 @@ const (
 )
 
 const (
-	indent     = 0
-	valueSep   = ","
-	null       = "null"
-	startMap   = "{"
-	endMap     = "}"
-	startArray = "["
-	endArray   = "]"
+	startMap = "{"
+	endMap   = "}"
 )
 
 var (
