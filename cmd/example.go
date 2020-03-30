@@ -2,7 +2,7 @@ package cmd
 
 var example = `    The following examples make use of a basic.json file which contains JSON
     logs where each log line is a single JSON object. You can find the
-    basic.json file in ./cmd/fixture along with other test fixtures used for
+    basic.json file in ./cmd/fixture/ along with other test fixtures used for
     golden file tests.
 
     Select all logs where any key matches "obj" and its associated value matches
