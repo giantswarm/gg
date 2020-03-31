@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"regexp"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
@@ -41,6 +43,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var group string
 	var isErr bool
 	var hasNewLine bool
+	var dropStack bool
+
+	// TODO remove with dropping support for legacy microerror stack structures.
+	if containsExp(r.flag.fields, "annotation") && !containsExp(r.flag.fields, "stack") {
+		r.flag.fields = append(r.flag.fields, "stack")
+		dropStack = true
+	}
 
 	scanner := bufio.NewScanner(r.stdin)
 	scanner.Split(splitter.New().Split)
@@ -85,17 +94,31 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// the -f/--field flag. We do not want to print lines that do not have the
 		// fields we want to display.
 		//
-		// TODO we check !isErr when checking for a match which is because of legacy
-		// microerror structures where the annotation is magically reverse
-		// engineered from the legacy stack. Once we do not have to deal with these
-		// legacy structures we can remove the !isErr check.
-		{
+		// TODO we additionally check !isErr when checking for a match which is
+		// because of legacy microerror structures where the annotation is magically
+		// reverse engineered from the legacy stack. Once we do not have to deal
+		// with these legacy structures we can remove the additional check.
+		if len(r.flag.fields) != 0 {
 			match, err := matcher.Match(l, matcher.Exp(r.flag.fields))
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			if !isErr && !match {
+			if !match && !isErr {
+				continue
+			}
+		}
+
+		// Filter errors without stack and annotation fields, in case we are looking
+		// for these fields. We do not want to print logs that do not have fields we
+		// are actually looking for, even if they are errors.
+		if len(r.flag.fields) != 0 {
+			match, err := matcher.Match(l, matcher.ExpWithout(r.flag.fields, "annotation", "stack"))
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if !match && isErr {
 				continue
 			}
 		}
@@ -103,7 +126,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// Filter the current line of the stream based on the given expression with
 		// the -g/--group flag. We do not want to print lines that do not have the
 		// fields we want to group by.
-		{
+		if r.flag.group != "" {
 			match, err := matcher.Match(l, matcher.Exp([]string{r.flag.group}))
 			if err != nil {
 				return microerror.Mask(err)
@@ -116,7 +139,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		// Filter the current line of the stream based on the given expression with
 		// the -s/--select flag. We only want to print matching lines.
-		{
+		if len(r.flag.selects) != 0 {
 			match, err := matcher.Match(l, r.flag.selects)
 			if err != nil {
 				return microerror.Mask(err)
@@ -165,6 +188,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				return microerror.Mask(err)
 			}
 
+			if strings.HasPrefix(newLine, "{}") {
+				continue
+			}
+
 			l = newLine
 		}
 
@@ -186,7 +213,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// contain valid JSON objects anymore. Therefore all JSON object related
 		// operations must have been done at this point.
 		if isErr {
-			newLine, err := formatter.Error(l, r.flag.output, r.flag.fields)
+			newLine, err := formatter.Error(l, r.flag.output, r.flag.fields, dropStack)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -218,4 +245,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+func containsExp(fields []string, field string) bool {
+	for _, f := range fields {
+		if regexp.MustCompile(f).MatchString(field) {
+			return true
+		}
+	}
+
+	return false
 }

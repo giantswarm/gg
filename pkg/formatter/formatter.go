@@ -35,7 +35,7 @@ var (
 )
 
 func Colour(l string, output string) (string, error) {
-	s, err := colour(l, output, colorString, indentNone, nil)
+	s, err := colour(l, output, colorString, indentNone, nil, false)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -43,8 +43,8 @@ func Colour(l string, output string) (string, error) {
 	return s, nil
 }
 
-func Error(l string, output string, fields []string) (string, error) {
-	s, err := colour(l, output, colorError, indentFour, fields)
+func Error(l string, output string, fields []string, dropStack bool) (string, error) {
+	s, err := colour(l, output, colorError, indentFour, fields, dropStack)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -117,7 +117,7 @@ func Output(l string, output string) (string, error) {
 	return strings.Join(om.Values(), "    ") + "\n", nil
 }
 
-func colour(l string, output string, colour func(v ...interface{}) string, indent string, fields []string) (string, error) {
+func colour(l string, output string, colourFunc func(v ...interface{}) string, indent string, fields []string, dropStack bool) (string, error) {
 	if output == "json" {
 		om := NewOrderedMap()
 		err := json.Unmarshal([]byte(l), &om)
@@ -179,6 +179,26 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 						stack = strings.Replace(stack, annotation, "", -1)
 						annotation = annotation[2:]
 
+						if regexp.MustCompile(`\"line\": [0-9]{1,}$`).MatchString(stack) {
+							stack = stack + " } ]"
+						} else {
+							stack = stack + "\" } ]"
+						}
+
+						err := json.Unmarshal([]byte(stack), &list)
+						if err != nil {
+							return "", microerror.Mask(err)
+						}
+
+						for j, v := range list {
+							_, ok := v["line"]
+							if !ok {
+								annotation = v["file"].(string) + ", " + annotation
+								list = append(list[:j], list[j+1:]...)
+								continue
+							}
+						}
+
 						var expressions []*regexp.Regexp
 						for _, f := range fields {
 							expressions = append(expressions, regexp.MustCompile(f))
@@ -186,21 +206,22 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 
 						for _, e := range expressions {
 							if e.MatchString("annotation") {
-								s += indent + colorKey("\"annotation\"") + ": " + colour("\""+annotation+"\"") + ",\n"
+								s += indent + colorKey("\"annotation\"") + ": " + colourFunc("\""+annotation+"\"") + ",\n"
 							}
-						}
-
-						stack = stack + " } ]"
-
-						err := json.Unmarshal([]byte(stack), &list)
-						if err != nil {
-							return "", microerror.Mask(err)
 						}
 					}
 				}
 
+				// At this point we added the annotation which is all we wanted. If
+				// dropStack is true the user wanted the annotation and not the stack.
+				// We need the stack to get the annotation so we just found and added
+				// the annotation and drop the stack now.
+				if dropStack {
+					continue
+				}
+
 				for j, v := range list {
-					l += indent + indent + "{ " + colorKey("\"file\"") + ": " + colour("\""+v["file"].(string)+"\"") + ", " + colorKey("\"line\"") + ": " + colour(v["line"].(float64)) + " }"
+					l += indent + indent + "{ " + colorKey("\"file\"") + ": " + colourFunc("\""+v["file"].(string)+"\"") + ", " + colorKey("\"line\"") + ": " + colourFunc(v["line"].(float64)) + " }"
 
 					if j+1 < len(list) {
 						l += ","
@@ -216,7 +237,7 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 					return "", microerror.Mask(err)
 				}
 
-				l += colour(string(b))
+				l += colourFunc(string(b))
 			}
 
 			if indent != indentNone {
@@ -230,6 +251,10 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 			}
 		}
 
+		if strings.HasSuffix(s, ",\n") {
+			s = s[:len(s)-2] + "\n"
+		}
+
 		s += mapEnd
 		s += "\n"
 
@@ -238,7 +263,7 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 
 	var values []string
 	for _, v := range strings.Split(l, " ") {
-		values = append(values, colour(v))
+		values = append(values, colourFunc(v))
 	}
 
 	return strings.Join(values, " "), nil

@@ -1,0 +1,32 @@
+{
+    "resource": "tccpvpcpcx",
+    "annotation": "testError"
+}
+{
+    "resource": "tccpvpcpcx",
+    "annotation": "expected one vpc, got 2, execution failed error"
+}
+{
+    "resource": "tenantclients",
+    "annotation": "Get https://api.j7ksp.k8s.p5x.telekom.de/api?timeout=10s: x509, certificate is valid for ingress.local, not api.j7ksp.k8s.p5x.telekom.de"
+}
+{
+    "resource": "tenantclients",
+    "annotation": "Get https://api.pnwd0.k8s.eu-central-1.aws.cps.vodafone.com/api?timeout=10s, context deadline exceeded"
+}
+{
+    "resource": "tenantclients",
+    "annotation": "Get https://api.j7ksp.k8s.p5x.telekom.de/api?timeout=10s: x509, certificate is valid for ingress.local, not api.j7ksp.k8s.p5x.telekom.de"
+}
+{
+    "resource": "tenantclients",
+    "annotation": "Get https://api.j7ksp.k8s.p5x.telekom.de/api?timeout=10s: x509, certificate is valid for ingress.local, not api.j7ksp.k8s.p5x.telekom.de"
+}
+{
+    "resource": "tenantclients",
+    "annotation": "Get https://api.j7ksp.k8s.p5x.telekom.de/api?timeout=10s: x509, certificate is valid for ingress.local, not api.j7ksp.k8s.p5x.telekom.de"
+}
+{
+    "resource": "tenantclients",
+    "annotation": "Get https://api.j7ksp.k8s.p5x.telekom.de/api?timeout=10s: x509, certificate is valid for ingress.local, not api.j7ksp.k8s.p5x.telekom.de"
+}
