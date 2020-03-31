@@ -197,21 +197,29 @@ func colour(l string, output string, colourFunc func(v ...interface{}) string, i
 						for j, v := range list {
 							_, ok := v["line"]
 							if !ok {
-								annotation = v["file"].(string) + ", " + annotation
+								if annotation == "" {
+									annotation = v["file"].(string)
+								} else {
+									annotation = v["file"].(string) + ", " + annotation
+								}
 								list = append(list[:j], list[j+1:]...)
 								continue
 							}
 						}
 
+						var withAnn bool
 						var expressions []*regexp.Regexp
 						for _, f := range fields {
 							expressions = append(expressions, regexp.MustCompile(f))
 						}
-
 						for _, e := range expressions {
 							if e.MatchString("annotation") {
-								s += indent + colorKey("\"annotation\"") + ": " + colourFunc("\""+annotation+"\"") + ",\n"
+								withAnn = true
 							}
+						}
+
+						if withAnn || len(fields) == 0 {
+							s += indent + colorKey("\"annotation\"") + ": " + colourFunc("\""+annotation+"\"") + ",\n"
 						}
 					}
 				}
