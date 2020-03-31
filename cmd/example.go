@@ -25,15 +25,15 @@ var example = `    The following examples make use of a basic.json file which co
     the output since "time" is always consistently formatted, whereas "message"
     can be of almost arbitrary length.
 
-        cat basic.json | gg -s obj:qihx8 -s res:dra -f ti,mes
+        cat basic.json | gg -s obj:qihx8 -s res:dra -f tim,mes
 
     Select all logs like the example above but on top of that group output
     key-value pairs of the logs based on the common value of associated keys
     matching "lo". This can be used to e.g. group resource logs by their
     reconciliation "loop".
 
-        cat basic.json | gg -s obj:qihx8 -s res:dra -f ti,mes -g lo
+        cat basic.json | gg -s obj:qihx8 -s res:dra -f tim,mes -g loo
 
     Display the list of resources executed for a given CR.
 
-        cat basic.json | gg -s obj:qihx8 -s con:mac -f res -o text -g lo | uniq`
+        cat basic.json | gg -s obj:qihx8 -s con:mac -f res -o text -g loo | uniq`
