@@ -213,6 +213,14 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 					}
 				}
 
+				// At this point we added the annotation which is all we wanted. If
+				// dropStack is true the user wanted the annotation and not the stack.
+				// We need the stack to get the annotation so we just found and added
+				// the annotation and drop the stack now.
+				if dropStack {
+					continue
+				}
+
 				for j, v := range list {
 					l += indent + indent + "{ " + colorKey("\"file\"") + ": " + colour("\""+v["file"].(string)+"\"") + ", " + colorKey("\"line\"") + ": " + colour(v["line"].(float64)) + " }"
 
@@ -233,16 +241,14 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 				l += colour(string(b))
 			}
 
-			if !dropStack {
-				if indent != indentNone {
-					s += indent + l
-					if i+1 < len(keys) {
-						s += ","
-					}
-					s += "\n"
-				} else {
-					s += l + " "
+			if indent != indentNone {
+				s += indent + l
+				if i+1 < len(keys) {
+					s += ","
 				}
+				s += "\n"
+			} else {
+				s += l + " "
 			}
 		}
 

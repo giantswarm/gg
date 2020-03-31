@@ -93,19 +93,21 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// the -f/--field flag. We do not want to print lines that do not have the
 		// fields we want to display.
 		//
-		// TODO we check !isErr when checking for a match which is because of legacy
-		// microerror structures where the annotation is magically reverse
-		// engineered from the legacy stack. Once we do not have to deal with these
-		// legacy structures we can remove the !isErr check.
+		// TODO we additionally check "|| !isErr && !match" when checking for a
+		// match which is because of legacy microerror structures where the
+		// annotation is magically reverse engineered from the legacy stack. Once we
+		// do not have to deal with these legacy structures we can remove the
+		// additional  check.
 		{
 			match, err := matcher.Match(l, matcher.Exp(r.flag.fields))
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			if !isErr && !match {
+			if !match || !isErr && !match {
 				continue
 			}
+			fmt.Printf("%s\n", l)
 		}
 
 		// Filter the current line of the stream based on the given expression with
