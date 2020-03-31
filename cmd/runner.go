@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"regexp"
+	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
@@ -41,6 +43,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var group string
 	var isErr bool
 	var hasNewLine bool
+	var dropStack bool
+
+	if contains(r.flag.fields, "annotation") && !contains(r.flag.fields, "stack") {
+		r.flag.fields = append(r.flag.fields, "stack")
+		dropStack = true
+	}
 
 	scanner := bufio.NewScanner(r.stdin)
 	scanner.Split(splitter.New().Split)
@@ -165,6 +173,10 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				return microerror.Mask(err)
 			}
 
+			if strings.HasPrefix(newLine, "{}") {
+				continue
+			}
+
 			l = newLine
 		}
 
@@ -186,7 +198,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// contain valid JSON objects anymore. Therefore all JSON object related
 		// operations must have been done at this point.
 		if isErr {
-			newLine, err := formatter.Error(l, r.flag.output, r.flag.fields)
+			newLine, err := formatter.Error(l, r.flag.output, r.flag.fields, dropStack)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -218,4 +230,14 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
+}
+
+func contains(fields []string, field string) bool {
+	for _, f := range fields {
+		if regexp.MustCompile(f).MatchString(field) {
+			return true
+		}
+	}
+
+	return false
 }

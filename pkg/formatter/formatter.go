@@ -35,7 +35,7 @@ var (
 )
 
 func Colour(l string, output string) (string, error) {
-	s, err := colour(l, output, colorString, indentNone, nil)
+	s, err := colour(l, output, colorString, indentNone, nil, false)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -43,8 +43,8 @@ func Colour(l string, output string) (string, error) {
 	return s, nil
 }
 
-func Error(l string, output string, fields []string) (string, error) {
-	s, err := colour(l, output, colorError, indentFour, fields)
+func Error(l string, output string, fields []string, dropStack bool) (string, error) {
+	s, err := colour(l, output, colorError, indentFour, fields, dropStack)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -117,7 +117,7 @@ func Output(l string, output string) (string, error) {
 	return strings.Join(om.Values(), "    ") + "\n", nil
 }
 
-func colour(l string, output string, colour func(v ...interface{}) string, indent string, fields []string) (string, error) {
+func colour(l string, output string, colour func(v ...interface{}) string, indent string, fields []string, dropStack bool) (string, error) {
 	if output == "json" {
 		om := NewOrderedMap()
 		err := json.Unmarshal([]byte(l), &om)
@@ -179,6 +179,27 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 						stack = strings.Replace(stack, annotation, "", -1)
 						annotation = annotation[2:]
 
+						hasLine := regexp.MustCompile(`\"line\": [0-9]{1,}$`).MatchString(stack)
+						if hasLine {
+							stack = stack + " } ]"
+						} else {
+							stack = stack + "\" } ]"
+						}
+
+						err := json.Unmarshal([]byte(stack), &list)
+						if err != nil {
+							return "", microerror.Mask(err)
+						}
+
+						for j, v := range list {
+							_, ok := v["line"]
+							if !ok {
+								annotation = v["file"].(string) + ", " + annotation
+								list = append(list[:j], list[j+1:]...)
+								continue
+							}
+						}
+
 						var expressions []*regexp.Regexp
 						for _, f := range fields {
 							expressions = append(expressions, regexp.MustCompile(f))
@@ -188,13 +209,6 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 							if e.MatchString("annotation") {
 								s += indent + colorKey("\"annotation\"") + ": " + colour("\""+annotation+"\"") + ",\n"
 							}
-						}
-
-						stack = stack + " } ]"
-
-						err := json.Unmarshal([]byte(stack), &list)
-						if err != nil {
-							return "", microerror.Mask(err)
 						}
 					}
 				}
@@ -219,14 +233,16 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 				l += colour(string(b))
 			}
 
-			if indent != indentNone {
-				s += indent + l
-				if i+1 < len(keys) {
-					s += ","
+			if !dropStack {
+				if indent != indentNone {
+					s += indent + l
+					if i+1 < len(keys) {
+						s += ","
+					}
+					s += "\n"
+				} else {
+					s += l + " "
 				}
-				s += "\n"
-			} else {
-				s += l + " "
 			}
 		}
 

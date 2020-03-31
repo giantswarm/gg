@@ -139,6 +139,27 @@ func Test_Cmd_run(t *testing.T) {
 			},
 			fixture: "error.json",
 		},
+		{
+			name: "case 7, resource, error logs, json",
+			flag: &flag{
+				fields: []string{
+					"res",
+				},
+				output: "json",
+			},
+			fixture: "error.json",
+		},
+		{
+			name: "case 8, resource and annotation, error logs, json",
+			flag: &flag{
+				fields: []string{
+					"res",
+					"ann",
+				},
+				output: "json",
+			},
+			fixture: "error.json",
+		},
 	}
 
 	for i, tc := range testCases {
