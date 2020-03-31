@@ -160,6 +160,17 @@ func Test_Cmd_run(t *testing.T) {
 			},
 			fixture: "error.json",
 		},
+		{
+			name: "case 9, collector errors, json",
+			flag: &flag{
+				output: "json",
+				selects: []string{
+					"lev:err",
+					"mes:metr",
+				},
+			},
+			fixture: "error.json",
+		},
 	}
 
 	for i, tc := range testCases {

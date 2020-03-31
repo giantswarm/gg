@@ -169,6 +169,7 @@ func colour(l string, output string, colourFunc func(v ...interface{}) string, i
 					{
 						stack := om.Get(key)
 						stack = stack[2 : len(stack)-2]
+						stack = strings.Replace(stack, `"`, `\"`, -1)
 						stack = "[ { \"file\": \"" + stack
 						stack = strings.Replace(stack, ".go:", ".go\", \"line\": ", -1)
 						stack = strings.Replace(stack, ": } {", "}, {\"file\": \"", -1)
@@ -177,7 +178,10 @@ func colour(l string, output string, colourFunc func(v ...interface{}) string, i
 
 						annotation := regexp.MustCompile(`: [^"][^0-9].*}?`).FindString(stack)
 						stack = strings.Replace(stack, annotation, "", -1)
-						annotation = annotation[2:]
+
+						if annotation != "" {
+							annotation = annotation[2:]
+						}
 
 						if regexp.MustCompile(`\"line\": [0-9]{1,}$`).MatchString(stack) {
 							stack = stack + " } ]"

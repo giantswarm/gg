@@ -1,0 +1,11 @@
+{
+    "caller": "github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/exporterkit/collector/set.go:92",
+    "level": "error",
+    "message": "failed collecting metrics",
+    "stack": [
+        { "file": "/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/exporterkit/collector/set.go", "line": 92 },
+        { "file": "/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/exporterkit/collector/set.go", "line": 83 },
+        { "file": "/go/src/github.com/giantswarm/cluster-operator/service/collector/cluster.go", "line": 77 }
+    ],
+    "time": "2020-03-31T09:08:41.668192+00:00"
+}
