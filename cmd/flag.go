@@ -28,6 +28,9 @@ func (f *flag) Validate() error {
 		if f == "" {
 			return microerror.Maskf(invalidFlagsError, "-f/--field must not be empty")
 		}
+		if len(f) < 3 {
+			return microerror.Maskf(invalidFlagsError, "-f/--field must at least be 3 characters long")
+		}
 		_, err := regexp.Compile(f)
 		if err != nil {
 			return microerror.Mask(err)
@@ -36,6 +39,9 @@ func (f *flag) Validate() error {
 
 	// Validate -g/--group flag.
 	if f.group != "" {
+		if len(f.group) < 3 {
+			return microerror.Maskf(invalidFlagsError, "-g/--group must at least be 3 characters long")
+		}
 		_, err := regexp.Compile(f.group)
 		if err != nil {
 			return microerror.Mask(err)
@@ -61,6 +67,9 @@ func (f *flag) Validate() error {
 		}
 
 		for _, s := range split {
+			if len(s) < 3 {
+				return microerror.Maskf(invalidFlagsError, "-s/--select key-val must at least be 3 characters long respectively")
+			}
 			_, err := regexp.Compile(s)
 			if err != nil {
 				return microerror.Mask(err)

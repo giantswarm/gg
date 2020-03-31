@@ -35,10 +35,10 @@ func Test_Cmd_run(t *testing.T) {
 			name: "case 0, drainer resource, time first, grouped by loop, text",
 			flag: &flag{
 				fields: []string{
-					"ti",
+					"tim",
 					"mes",
 				},
-				group:  "lo",
+				group:  "loo",
 				output: "text",
 				selects: []string{
 					"obj:qihx8",
@@ -54,7 +54,7 @@ func Test_Cmd_run(t *testing.T) {
 					"loo",
 					"mes",
 				},
-				group:  "lo",
+				group:  "loo",
 				output: "json",
 				selects: []string{
 					"obj:qihx8",
@@ -100,7 +100,7 @@ func Test_Cmd_run(t *testing.T) {
 					"res",
 					"mes",
 				},
-				group:  "lo",
+				group:  "loo",
 				output: "text",
 				selects: []string{
 					"obj:qihx8",

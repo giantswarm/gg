@@ -45,7 +45,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var hasNewLine bool
 	var dropStack bool
 
-	if contains(r.flag.fields, "annotation") && !contains(r.flag.fields, "stack") {
+	if containsExp(r.flag.fields, "annotation") && !containsExp(r.flag.fields, "stack") {
 		r.flag.fields = append(r.flag.fields, "stack")
 		dropStack = true
 	}
@@ -93,27 +93,39 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// the -f/--field flag. We do not want to print lines that do not have the
 		// fields we want to display.
 		//
-		// TODO we additionally check "|| !isErr && !match" when checking for a
-		// match which is because of legacy microerror structures where the
-		// annotation is magically reverse engineered from the legacy stack. Once we
-		// do not have to deal with these legacy structures we can remove the
-		// additional  check.
-		{
+		// TODO we additionally check !isErr when checking for a match which is
+		// because of legacy microerror structures where the annotation is magically
+		// reverse engineered from the legacy stack. Once we do not have to deal
+		// with these legacy structures we can remove the additional check.
+		if len(r.flag.fields) != 0 {
 			match, err := matcher.Match(l, matcher.Exp(r.flag.fields))
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			if !match || !isErr && !match {
+			if !match && !isErr {
 				continue
 			}
-			fmt.Printf("%s\n", l)
+		}
+
+		// Filter errors without stack and annotation fields, in case we are looking
+		// for these fields. We do not want to print logs that do not have fields we
+		// are actually looking for, even if they are errors.
+		if len(r.flag.fields) != 0 {
+			match, err := matcher.Match(l, matcher.ExpWithout(r.flag.fields, "annotation", "stack"))
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if !match && isErr {
+				continue
+			}
 		}
 
 		// Filter the current line of the stream based on the given expression with
 		// the -g/--group flag. We do not want to print lines that do not have the
 		// fields we want to group by.
-		{
+		if r.flag.group != "" {
 			match, err := matcher.Match(l, matcher.Exp([]string{r.flag.group}))
 			if err != nil {
 				return microerror.Mask(err)
@@ -126,7 +138,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		// Filter the current line of the stream based on the given expression with
 		// the -s/--select flag. We only want to print matching lines.
-		{
+		if len(r.flag.selects) != 0 {
 			match, err := matcher.Match(l, r.flag.selects)
 			if err != nil {
 				return microerror.Mask(err)
@@ -234,7 +246,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	return nil
 }
 
-func contains(fields []string, field string) bool {
+func containsExp(fields []string, field string) bool {
 	for _, f := range fields {
 		if regexp.MustCompile(f).MatchString(field) {
 			return true

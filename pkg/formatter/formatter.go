@@ -117,7 +117,7 @@ func Output(l string, output string) (string, error) {
 	return strings.Join(om.Values(), "    ") + "\n", nil
 }
 
-func colour(l string, output string, colour func(v ...interface{}) string, indent string, fields []string, dropStack bool) (string, error) {
+func colour(l string, output string, colourFunc func(v ...interface{}) string, indent string, fields []string, dropStack bool) (string, error) {
 	if output == "json" {
 		om := NewOrderedMap()
 		err := json.Unmarshal([]byte(l), &om)
@@ -179,8 +179,7 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 						stack = strings.Replace(stack, annotation, "", -1)
 						annotation = annotation[2:]
 
-						hasLine := regexp.MustCompile(`\"line\": [0-9]{1,}$`).MatchString(stack)
-						if hasLine {
+						if regexp.MustCompile(`\"line\": [0-9]{1,}$`).MatchString(stack) {
 							stack = stack + " } ]"
 						} else {
 							stack = stack + "\" } ]"
@@ -207,7 +206,7 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 
 						for _, e := range expressions {
 							if e.MatchString("annotation") {
-								s += indent + colorKey("\"annotation\"") + ": " + colour("\""+annotation+"\"") + ",\n"
+								s += indent + colorKey("\"annotation\"") + ": " + colourFunc("\""+annotation+"\"") + ",\n"
 							}
 						}
 					}
@@ -222,7 +221,7 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 				}
 
 				for j, v := range list {
-					l += indent + indent + "{ " + colorKey("\"file\"") + ": " + colour("\""+v["file"].(string)+"\"") + ", " + colorKey("\"line\"") + ": " + colour(v["line"].(float64)) + " }"
+					l += indent + indent + "{ " + colorKey("\"file\"") + ": " + colourFunc("\""+v["file"].(string)+"\"") + ", " + colorKey("\"line\"") + ": " + colourFunc(v["line"].(float64)) + " }"
 
 					if j+1 < len(list) {
 						l += ","
@@ -238,7 +237,7 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 					return "", microerror.Mask(err)
 				}
 
-				l += colour(string(b))
+				l += colourFunc(string(b))
 			}
 
 			if indent != indentNone {
@@ -252,6 +251,10 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 			}
 		}
 
+		if strings.HasSuffix(s, ",\n") {
+			s = s[:len(s)-2] + "\n"
+		}
+
 		s += mapEnd
 		s += "\n"
 
@@ -260,7 +263,7 @@ func colour(l string, output string, colour func(v ...interface{}) string, inden
 
 	var values []string
 	for _, v := range strings.Split(l, " ") {
-		values = append(values, colour(v))
+		values = append(values, colourFunc(v))
 	}
 
 	return strings.Join(values, " "), nil
