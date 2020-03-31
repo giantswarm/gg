@@ -45,6 +45,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var hasNewLine bool
 	var dropStack bool
 
+	// TODO remove with dropping support for legacy microerror stack structures.
 	if containsExp(r.flag.fields, "annotation") && !containsExp(r.flag.fields, "stack") {
 		r.flag.fields = append(r.flag.fields, "stack")
 		dropStack = true
