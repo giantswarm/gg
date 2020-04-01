@@ -11,10 +11,10 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/giantswarm/gg/pkg/unittest"
-	"github.com/giantswarm/microerror"
 )
 
 var update = goflag.Bool("update", false, "update .golden file")
