@@ -92,8 +92,8 @@ func (om *OrderedMap) EntriesReverseIter() func() (*KVPair, bool) {
 	}
 }
 
-func (om *OrderedMap) Get(key string) string {
-	return om.m[key].(string)
+func (om *OrderedMap) Get(key string) interface{} {
+	return om.m[key]
 }
 
 func (om *OrderedMap) GetValue(key string) (value interface{}, ok bool) {
