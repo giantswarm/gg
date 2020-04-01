@@ -147,27 +147,25 @@ func colour(l string, output string, colourFunc func(v ...interface{}) string, i
 				l += arrayStart + "\n"
 
 				var list []map[string]interface{}
-				err := json.Unmarshal([]byte(om.Get(key)), &list)
-				if err != nil {
-					// TODO all this here is legacy error handling. With microerror
-					// changes the stack structure changed. Here we still have to deal
-					// with error stacks which are actually not representated as valid
-					// JSON. Once all operators make use of the new microerror structures
-					// the code below can be removed and replaced with the usual error
-					// handling.
-					//
-					//     if err != nil {
-					//         return "", microerror.Mask(err)
-					//     }
-					//
-					// TODO we magically capture error message information from the legacy
-					// structures and add an annotation to the printed line. In order to
-					// maintain field selection via -f/--field the interface of colour was
-					// extended with the fields parameter. Once this code here is removed
-					// the fields parameter can be dropped since this is just an ugly hack
-					// for now.
-					{
-						stack := om.Get(key)
+
+				value := om.Get(key)
+				stack, ok := value.(string)
+				if ok {
+					err := json.Unmarshal([]byte(stack), &list)
+					if err != nil {
+						// TODO all this here is legacy error handling. With microerror
+						// changes the stack structure changed. Here we still have to deal
+						// with error stacks which are actually not representated as valid
+						// JSON. Once all operators make use of the new microerror structures
+						// the stack value should never be a string anymore but always a real
+						// JSON object/array.
+						//
+						// TODO we magically capture error message information from the legacy
+						// structures and add an annotation to the printed line. In order to
+						// maintain field selection via -f/--field the interface of colour was
+						// extended with the fields parameter. Once this code here is removed
+						// the fields parameter can be dropped since this is just an ugly hack
+						// for now.
 						stack = stack[2 : len(stack)-2]
 						stack = strings.Replace(stack, `"`, `\"`, -1)
 						stack = "[ { \"file\": \"" + stack
@@ -220,6 +218,28 @@ func colour(l string, output string, colourFunc func(v ...interface{}) string, i
 
 						if withAnn || len(fields) == 0 {
 							s += indent + colorKey("\"annotation\"") + ": " + colourFunc("\""+annotation+"\"") + ",\n"
+						}
+					}
+				} else {
+					om := value.(*OrderedMap)
+					b, err := om.MarshalJSON()
+					if err != nil {
+						return "", microerror.Mask(err)
+					}
+					err = json.Unmarshal(b, &list)
+					if err != nil {
+						var jsonErr microerror.JSONError
+						err = json.Unmarshal(b, &jsonErr)
+						if err != nil {
+							return "", microerror.Mask(err)
+						}
+						b, err := json.Marshal(jsonErr.Stack)
+						if err != nil {
+							return "", microerror.Mask(err)
+						}
+						err = json.Unmarshal(b, &list)
+						if err != nil {
+							return "", microerror.Mask(err)
 						}
 					}
 				}

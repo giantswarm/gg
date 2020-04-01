@@ -57,7 +57,7 @@ func Match(l string, selects []string) (bool, error) {
 		}
 	}
 
-	var m map[string]string
+	var m map[string]interface{}
 	err := json.Unmarshal([]byte(l), &m)
 	if err != nil {
 		return false, microerror.Mask(err)
@@ -97,9 +97,13 @@ func Value(l string, s string) (string, error) {
 	return "", nil
 }
 
-func pairMatchesMapping(pair []*regexp.Regexp, m map[string]string) bool {
+func pairMatchesMapping(pair []*regexp.Regexp, m map[string]interface{}) bool {
 	for k, v := range m {
-		matches := pair[0].MatchString(k) && pair[1].MatchString(v)
+		s, ok := v.(string)
+		if !ok {
+			continue
+		}
+		matches := pair[0].MatchString(k) && pair[1].MatchString(s)
 		if matches {
 			return true
 		}

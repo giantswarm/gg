@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/giantswarm/microerror"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/giantswarm/gg/pkg/unittest"
@@ -171,6 +172,17 @@ func Test_Cmd_run(t *testing.T) {
 			},
 			fixture: "error.json",
 		},
+		{
+			name: "case 10, microkit errors, json",
+			flag: &flag{
+				output: "json",
+				selects: []string{
+					"cal:mic",
+					"lev:err",
+				},
+			},
+			fixture: "error.json",
+		},
 	}
 
 	for i, tc := range testCases {
@@ -180,7 +192,7 @@ func Test_Cmd_run(t *testing.T) {
 				p := filepath.Join("fixture", tc.fixture)
 				file, err := os.Open(p)
 				if err != nil {
-					t.Fatal(err)
+					t.Fatal(microerror.JSON(err))
 				}
 
 				stdin = file
@@ -200,7 +212,7 @@ func Test_Cmd_run(t *testing.T) {
 
 				err := ru.run(context.Background(), nil, nil)
 				if err != nil {
-					t.Fatal(err)
+					t.Fatal(microerror.JSON(err))
 				}
 			}
 
@@ -210,12 +222,12 @@ func Test_Cmd_run(t *testing.T) {
 				if *update {
 					err := ioutil.WriteFile(p, stdout.Bytes(), 0644)
 					if err != nil {
-						t.Fatal(err)
+						t.Fatal(microerror.JSON(err))
 					}
 				}
 				goldenFile, err := ioutil.ReadFile(p)
 				if err != nil {
-					t.Fatal(err)
+					t.Fatal(microerror.JSON(err))
 				}
 
 				if !bytes.Equal(stdout.Bytes(), goldenFile) {
