@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
+	"github.com/giantswarm/gg/pkg/colour"
 	"github.com/giantswarm/gg/pkg/formatter"
 	"github.com/giantswarm/gg/pkg/matcher"
 	"github.com/giantswarm/gg/pkg/splitter"
@@ -42,14 +43,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var err error
 	var group string
 	var isErr bool
-	var hasNewLine bool
-	var dropStack bool
-
-	// TODO remove with dropping support for legacy microerror stack structures.
-	if containsExp(r.flag.fields, "annotation") && !containsExp(r.flag.fields, "stack") {
-		r.flag.fields = append(r.flag.fields, "stack")
-		dropStack = true
-	}
 
 	scanner := bufio.NewScanner(r.stdin)
 	scanner.Split(splitter.New().Split)
@@ -67,14 +60,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// unnecessary padding.
 		{
 			if l[0] != '{' {
-				if !hasNewLine {
-					fmt.Fprint(r.stdout, "\n")
-				}
 				fmt.Fprint(r.stdout, l)
-				fmt.Fprint(r.stdout, "\n")
-
-				hasNewLine = true
-
 				continue
 			}
 		}
@@ -93,18 +79,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// Filter the current line of the stream based on the given expression with
 		// the -f/--field flag. We do not want to print lines that do not have the
 		// fields we want to display.
-		//
-		// TODO we additionally check !isErr when checking for a match which is
-		// because of legacy microerror structures where the annotation is magically
-		// reverse engineered from the legacy stack. Once we do not have to deal
-		// with these legacy structures we can remove the additional check.
 		if len(r.flag.fields) != 0 {
 			match, err := matcher.Match(l, matcher.Exp(r.flag.fields))
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			if !match && !isErr {
+			if !match {
 				continue
 			}
 		}
@@ -172,9 +153,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			// Note that a new line is only inserted in case no invalid JSON got
 			// detected. This is to prevent unnecessary extra padding.
 			if value != group {
-				if !hasNewLine {
-					fmt.Fprint(r.stdout, "\n")
-				}
+				fmt.Fprint(r.stdout, "\n")
 				group = value
 			}
 		}
@@ -197,8 +176,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		// Transform the current line of the stream based on the given fields with
 		// the -o/--output flag. We only want to print selected fields.
-		{
-			newLine, err := formatter.Output(l, r.flag.output)
+		if r.flag.output == "text" {
+			newLine, err := formatter.OutputText(l)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -212,15 +191,32 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// order to make them colorful. This implies that the JSON strings do not
 		// contain valid JSON objects anymore. Therefore all JSON object related
 		// operations must have been done at this point.
-		if isErr {
-			newLine, err := formatter.Error(l, r.flag.output, r.flag.fields, dropStack)
+		if r.flag.output == "text" && isErr {
+			newLine, err := formatter.ColourText(l, colour.Palette{Key: colour.Blue, Value: colour.Red})
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
 			l = newLine
-		} else {
-			newLine, err := formatter.Colour(l, r.flag.output)
+		}
+		if r.flag.output == "text" && !isErr {
+			newLine, err := formatter.ColourText(l, colour.Palette{Key: colour.Blue, Value: colour.Green})
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			l = newLine
+		}
+		if r.flag.output == "json" && isErr {
+			newLine, err := formatter.ColourJSON(l, colour.Palette{Key: colour.Blue, Value: colour.Red})
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			l = newLine
+		}
+		if r.flag.output == "json" && !isErr {
+			newLine, err := formatter.ColourJSON(l, colour.Palette{Key: colour.Blue, Value: colour.Green})
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -230,12 +226,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		// Finally we print the current line of the stream based on its processed
 		// selection and transformation.
-		//
-		// Note that we reset hasNewLine again to start all over with the detection
-		// of extra padding. This is basically for eye candy reasons.
 		{
-			hasNewLine = false
-			fmt.Fprint(r.stdout, l)
+			fmt.Fprint(r.stdout, l, "\n")
 		}
 	}
 
