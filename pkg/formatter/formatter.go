@@ -1,16 +1,18 @@
 package formatter
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
+	"io"
 	"regexp"
-	"strings"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/gg/pkg/colour"
 	"github.com/giantswarm/gg/pkg/featuremap"
+	"github.com/giantswarm/gg/pkg/splitter"
 )
 
 const (
@@ -19,78 +21,77 @@ const (
 )
 
 const (
-	arrayEnd   = "]"
-	arrayStart = "["
-	mapEnd     = "}"
-	mapStart   = "{"
-)
-
-const (
 	indentNone = ""
 	indentFour = "    "
 )
 
-var (
-	colorKey    = color.New(color.FgHiBlue).SprintFunc()
-	colorString = color.New(color.FgGreen).SprintFunc()
-	colorError  = color.New(color.FgRed).SprintFunc()
-)
-
 func ColourJSON(l string, p colour.Palette) (string, error) {
-	fm := featuremap.NewWithPalette(p)
+	var scanner *bufio.Scanner
+	{
+		b := &bytes.Buffer{}
+		err := json.Indent(b, []byte(l), "", indentFour)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
+		scanner = bufio.NewScanner(b)
+		scanner.Split(splitter.New().Split)
+	}
+
+	b := &bytes.Buffer{}
+	for scanner.Scan() {
+		l := scanner.Text()
+		switch {
+		case l[0] == '{' || l[0] == '}' || l[0] == '[' || l[0] == ']':
+			io.WriteString(b, l)
+		default:
+			l = regexp.MustCompile(`(".*"): `).ReplaceAllString(l, p.Key("$1")+": ")
+			l = regexp.MustCompile(`: (".*")`).ReplaceAllString(l, ": "+p.Value("$1"))
+			l = regexp.MustCompile(`: ([^"].*)`).ReplaceAllString(l, ": "+p.Value("$1"))
+			io.WriteString(b, l)
+		}
+	}
+
+	return b.String(), nil
+}
+
+func Fields(l string, fields []string) (string, error) {
+	fm := featuremap.New()
 	err := fm.UnmarshalJSON([]byte(l))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	b, err := fm.MarshalJSON()
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return string(b), nil
-}
-
-func ColourText(l string, p colour.Palette) (string, error) {
-	var values []string
-	for _, v := range strings.Split(l, " ") {
-		values = append(values, p.Value(v))
-	}
-
-	return strings.Join(values, " "), nil
-}
-
-func Fields(l string, fields []string) (string, error) {
 	var expressions []*regexp.Regexp
 	for _, f := range fields {
 		expressions = append(expressions, regexp.MustCompile(f))
 	}
 
-	var m map[string]string
-	err := json.Unmarshal([]byte(l), &m)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	fm := featuremap.NewWithPalette(colour.NewNoColourPalette())
 	for _, e := range expressions {
-		for k, v := range m {
-			if e.MatchString(k) {
-				if k == "time" {
-					t, err := time.Parse(timeFormatFrom, v)
+		f := fm.EntriesIter()
+		for {
+			kv, ok := f()
+			if !ok {
+				break
+			}
+
+			if e.MatchString(kv.Key) {
+				if kv.Key == "time" {
+					t, err := time.Parse(timeFormatFrom, kv.Value.(string))
 					if err != nil {
 						return "", microerror.Mask(err)
 					}
 
-					v = t.Format(timeFormatTo)
+					fm.Set(kv.Key, t.Format(timeFormatTo))
+					continue
 				}
-
-				fm.Set(k, v)
+			} else {
+				fm.Delete(kv.Key)
 			}
 		}
 	}
 
-	newFormat, err := json.Marshal(fm)
+	newFormat, err := fm.MarshalJSON()
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -99,8 +100,8 @@ func Fields(l string, fields []string) (string, error) {
 }
 
 func IsErr(l string) (bool, error) {
-	fm := featuremap.NewWithPalette(colour.NewNoColourPalette())
-	err := json.Unmarshal([]byte(l), &fm)
+	fm := featuremap.New()
+	err := fm.UnmarshalJSON([]byte(l))
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
@@ -109,14 +110,4 @@ func IsErr(l string) (bool, error) {
 	isWar := fm.Has("level") && fm.Get("level") == "warning"
 
 	return isErr || isWar, nil
-}
-
-func OutputText(l string) (string, error) {
-	fm := featuremap.NewWithPalette(colour.NewNoColourPalette())
-	err := json.Unmarshal([]byte(l), &fm)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return strings.Join(fm.Values(), "    "), nil
 }

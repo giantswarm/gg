@@ -7,14 +7,22 @@ const (
 )
 
 func Blue(s string) string {
-	return sprintf(117, s)
+	return sprintf(67, s)
 }
 
-func Green(s string) string {
+func DarkGreen(s string) string {
+	return sprintf(72, s)
+}
+
+func LightGreen(s string) string {
 	return sprintf(114, s)
 }
 
-func Red(s string) string {
+func DarkRed(s string) string {
+	return sprintf(125, s)
+}
+
+func LightRed(s string) string {
 	return sprintf(161, s)
 }
 

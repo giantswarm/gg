@@ -11,14 +11,12 @@ import (
 type flag struct {
 	fields  []string
 	group   string
-	output  string
 	selects []string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringSliceVarP(&f.fields, "field", "f", nil, "Fields the output lines should contain only.")
 	cmd.PersistentFlags().StringVarP(&f.group, "group", "g", "", "Group logs by inserting an empty line after the group end.")
-	cmd.PersistentFlags().StringVarP(&f.output, "output", "o", "json", "Output format, either json or text.")
 	cmd.PersistentFlags().StringSliceVarP(&f.selects, "select", "s", nil, "Select lines based on the given key:val regular expression.")
 }
 
@@ -45,16 +43,6 @@ func (f *flag) Validate() error {
 		_, err := regexp.Compile(f.group)
 		if err != nil {
 			return microerror.Mask(err)
-		}
-	}
-
-	// Validate -o/--output flag.
-	{
-		if f.output == "" {
-			return microerror.Maskf(invalidFlagsError, "-o/--output must not be empty")
-		}
-		if f.output != "json" && f.output != "text" {
-			return microerror.Maskf(invalidFlagsError, "-o/--output must either be text or json")
 		}
 	}
 

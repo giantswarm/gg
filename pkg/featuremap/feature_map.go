@@ -8,8 +8,6 @@ import (
 	"io"
 
 	"github.com/giantswarm/microerror"
-
-	"github.com/giantswarm/gg/pkg/colour"
 )
 
 // KVPair for initializing from a list of key-value pairs, or for looping
@@ -39,15 +37,13 @@ type KVPair struct {
 //     original proposal     https://gitlab.com/c0b/go-ordered-json/-/blob/49bbdab258c2e707b671515c36308ea48134970d/ordered.go
 //
 type FeatureMap struct {
-	colr colour.Palette
 	dict map[string]interface{}
 	list *list.List
 	keys map[string]*list.Element
 }
 
-func NewWithPalette(palette colour.Palette) *FeatureMap {
+func New() *FeatureMap {
 	return &FeatureMap{
-		colr: palette,
 		dict: make(map[string]interface{}),
 		list: list.New(),
 		keys: make(map[string]*list.Element),
@@ -123,21 +119,15 @@ func (fm *FeatureMap) MarshalJSON() ([]byte, error) {
 		k := e.Value.(string)
 		v := fm.dict[k]
 
-		res = append(res, fm.colr.Key(fmt.Sprintf("%q:", k))...)
+		res = append(res, fmt.Sprintf("%q:", k)...)
 
 		var b []byte
-		fmt.Printf("%#v\n", v)
 		b, err := json.Marshal(v)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		_, ok := v.(string)
-		if ok {
-			res = append(res, fm.colr.Value(string(b))...)
-		} else {
-			res = append(res, b...)
-		}
+		res = append(res, string(b)...)
 
 		if e != back {
 			res = append(res, ',')
@@ -180,10 +170,10 @@ func (fm *FeatureMap) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (fm *FeatureMap) Values() []string {
-	var values []string
+func (fm *FeatureMap) Values() []interface{} {
+	var values []interface{}
 	for _, k := range fm.Keys() {
-		values = append(values, fm.dict[k].(string))
+		values = append(values, fm.dict[k])
 	}
 
 	return values
@@ -209,7 +199,7 @@ func (fm *FeatureMap) parseobject(dec *json.Decoder) error {
 		}
 
 		var value interface{}
-		value, err = handledelim(fm.colr, t, dec)
+		value, err = handledelim(t, dec)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -229,11 +219,11 @@ func (fm *FeatureMap) parseobject(dec *json.Decoder) error {
 	return nil
 }
 
-func handledelim(p colour.Palette, t json.Token, dec *json.Decoder) (interface{}, error) {
+func handledelim(t json.Token, dec *json.Decoder) (interface{}, error) {
 	if delim, ok := t.(json.Delim); ok {
 		switch delim {
 		case '{':
-			om2 := NewWithPalette(p)
+			om2 := New()
 			err := om2.parseobject(dec)
 			if err != nil {
 				return nil, microerror.Mask(err)
@@ -241,7 +231,7 @@ func handledelim(p colour.Palette, t json.Token, dec *json.Decoder) (interface{}
 			return om2, nil
 		case '[':
 			var value []interface{}
-			value, err := parsearray(p, dec)
+			value, err := parsearray(dec)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
@@ -254,7 +244,7 @@ func handledelim(p colour.Palette, t json.Token, dec *json.Decoder) (interface{}
 	return t, nil
 }
 
-func parsearray(p colour.Palette, dec *json.Decoder) ([]interface{}, error) {
+func parsearray(dec *json.Decoder) ([]interface{}, error) {
 	var t json.Token
 	arr := make([]interface{}, 0)
 	for dec.More() {
@@ -264,7 +254,7 @@ func parsearray(p colour.Palette, dec *json.Decoder) ([]interface{}, error) {
 		}
 
 		var value interface{}
-		value, err = handledelim(p, t, dec)
+		value, err = handledelim(t, dec)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

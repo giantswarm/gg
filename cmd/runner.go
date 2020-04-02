@@ -174,49 +174,21 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			l = newLine
 		}
 
-		// Transform the current line of the stream based on the given fields with
-		// the -o/--output flag. We only want to print selected fields.
-		if r.flag.output == "text" {
-			newLine, err := formatter.OutputText(l)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			l = newLine
-		}
-
 		// Transform the current line of the stream so that it is colourized.
 		//
 		// Note that certain control characters are inserted into the strings in
 		// order to make them colorful. This implies that the JSON strings do not
 		// contain valid JSON objects anymore. Therefore all JSON object related
 		// operations must have been done at this point.
-		if r.flag.output == "text" && isErr {
-			newLine, err := formatter.ColourText(l, colour.Palette{Key: colour.Blue, Value: colour.Red})
+		if isErr {
+			newLine, err := formatter.ColourJSON(l, colour.Palette{Key: colour.DarkRed, Value: colour.LightRed})
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
 			l = newLine
-		}
-		if r.flag.output == "text" && !isErr {
-			newLine, err := formatter.ColourText(l, colour.Palette{Key: colour.Blue, Value: colour.Green})
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			l = newLine
-		}
-		if r.flag.output == "json" && isErr {
-			newLine, err := formatter.ColourJSON(l, colour.Palette{Key: colour.Blue, Value: colour.Red})
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			l = newLine
-		}
-		if r.flag.output == "json" && !isErr {
-			newLine, err := formatter.ColourJSON(l, colour.Palette{Key: colour.Blue, Value: colour.Green})
+		} else {
+			newLine, err := formatter.ColourJSON(l, colour.Palette{Key: colour.DarkGreen, Value: colour.LightGreen})
 			if err != nil {
 				return microerror.Mask(err)
 			}
