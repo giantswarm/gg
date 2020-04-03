@@ -33,30 +33,14 @@ func Test_Cmd_run(t *testing.T) {
 		fixture string
 	}{
 		{
-			name: "case 0, drainer resource, time first, grouped by loop, text",
+			name: "case 0, drainer resource, loop first, grouped by loop, with non json logs inbetween",
 			flag: &flag{
-				fields: []string{
-					"tim",
-					"mes",
-				},
-				group:  "loo",
-				output: "text",
-				selects: []string{
-					"obj:qihx8",
-					"res:dra",
-				},
-			},
-			fixture: "basic.json",
-		},
-		{
-			name: "case 1, drainer resource, loop first, grouped by loop, json, with non json logs inbetween",
-			flag: &flag{
+				colour: false,
 				fields: []string{
 					"loo",
 					"mes",
 				},
-				group:  "loo",
-				output: "json",
+				group: "loo",
 				selects: []string{
 					"obj:qihx8",
 					"res:dra",
@@ -65,13 +49,13 @@ func Test_Cmd_run(t *testing.T) {
 			fixture: "text.json",
 		},
 		{
-			name: "case 2, drainer resource, loop first, json, with non json logs inbetween",
+			name: "case 1, drainer resource, loop first, with non json logs inbetween",
 			flag: &flag{
+				colour: false,
 				fields: []string{
 					"loo",
 					"mes",
 				},
-				output: "json",
 				selects: []string{
 					"obj:qihx8",
 					"res:dra",
@@ -80,91 +64,72 @@ func Test_Cmd_run(t *testing.T) {
 			fixture: "text.json",
 		},
 		{
-			name: "case 3, service resource, resource first, text",
+			name: "case 2, error stack of warning logs",
 			flag: &flag{
+				colour: false,
 				fields: []string{
 					"res",
-					"tim",
+					"sta",
 				},
-				output: "text",
 				selects: []string{
-					"obj:hixh7",
-					"res:ser",
+					"lev:war",
 				},
 			},
-			fixture: "basic.json",
+			fixture: "error.json",
 		},
 		{
-			name: "case 4, all resources for machine deployment, grouped by loop, text",
+			name: "case 3, error stack of warning logs with annotation",
 			flag: &flag{
+				colour: false,
 				fields: []string{
 					"res",
+					"ann",
+					"sta",
+				},
+				selects: []string{
+					"lev:war",
+				},
+			},
+			fixture: "error.json",
+		},
+		{
+			name: "case 4, resource, error logs",
+			flag: &flag{
+				colour: false,
+				fields: []string{
+					"res",
+				},
+			},
+			fixture: "error.json",
+		},
+		// Note that the golden file is empty because the selection does not match
+		// anything.
+		{
+			name: "case 5, resource and annotation, error logs",
+			flag: &flag{
+				colour: false,
+				fields: []string{
+					"res",
+					"ann",
+				},
+			},
+			fixture: "error.json",
+		},
+		{
+			name: "case 6, message and resource, error logs",
+			flag: &flag{
+				colour: false,
+				fields: []string{
 					"mes",
-				},
-				group:  "loo",
-				output: "text",
-				selects: []string{
-					"obj:qihx8",
-					"con:mac",
-					"res:.*",
-				},
-			},
-			fixture: "basic.json",
-		},
-		{
-			name: "case 5, error stack of warning logs, json",
-			flag: &flag{
-				fields: []string{
 					"res",
-					"sta",
-				},
-				output: "json",
-				selects: []string{
-					"lev:war",
 				},
 			},
 			fixture: "error.json",
 		},
 		{
-			name: "case 6, error stack of warning logs with annotation, json",
+			name: "case 7, collector errors",
 			flag: &flag{
-				fields: []string{
-					"res",
-					"ann",
-					"sta",
-				},
-				output: "json",
-				selects: []string{
-					"lev:war",
-				},
-			},
-			fixture: "error.json",
-		},
-		{
-			name: "case 7, resource, error logs, json",
-			flag: &flag{
-				fields: []string{
-					"res",
-				},
-				output: "json",
-			},
-			fixture: "error.json",
-		},
-		{
-			name: "case 8, resource and annotation, error logs, json",
-			flag: &flag{
-				fields: []string{
-					"res",
-					"ann",
-				},
-				output: "json",
-			},
-			fixture: "error.json",
-		},
-		{
-			name: "case 9, collector errors, json",
-			flag: &flag{
-				output: "json",
+				colour: false,
 				selects: []string{
 					"lev:err",
 					"mes:metr",
@@ -173,9 +138,9 @@ func Test_Cmd_run(t *testing.T) {
 			fixture: "error.json",
 		},
 		{
-			name: "case 10, microkit errors, json",
+			name: "case 8, microkit errors",
 			flag: &flag{
-				output: "json",
+				colour: false,
 				selects: []string{
 					"cal:mic",
 					"lev:err",

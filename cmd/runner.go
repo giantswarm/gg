@@ -181,14 +181,28 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// contain valid JSON objects anymore. Therefore all JSON object related
 		// operations must have been done at this point.
 		if isErr {
-			newLine, err := formatter.ColourJSON(l, colour.Palette{Key: colour.DarkRed, Value: colour.LightRed})
+			var p colour.Palette
+			if r.flag.colour {
+				p = colour.Palette{Key: colour.DarkRed, Value: colour.LightRed}
+			} else {
+				p = colour.NewNoColourPalette()
+			}
+
+			newLine, err := formatter.ColourJSON(l, p)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
 			l = newLine
 		} else {
-			newLine, err := formatter.ColourJSON(l, colour.Palette{Key: colour.DarkGreen, Value: colour.LightGreen})
+			var p colour.Palette
+			if r.flag.colour {
+				p = colour.Palette{Key: colour.DarkGreen, Value: colour.LightGreen}
+			} else {
+				p = colour.NewNoColourPalette()
+			}
+
+			newLine, err := formatter.ColourJSON(l, p)
 			if err != nil {
 				return microerror.Mask(err)
 			}

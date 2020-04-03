@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"io"
 	"regexp"
-	"time"
 
 	"github.com/giantswarm/microerror"
 
@@ -24,6 +23,15 @@ const (
 	indentNone = ""
 	indentFour = "    "
 )
+
+//
+//     if kv.Key == "time" {
+//       t, err := time.Parse(timeFormatFrom, kv.Value.(string))
+//       if err != nil {
+//         return "", microerror.Mask(err)
+//       }
+//       fm.Set(kv.Key, t.Format(timeFormatTo))
+//     }
 
 func ColourJSON(l string, p colour.Palette) (string, error) {
 	var scanner *bufio.Scanner
@@ -43,12 +51,19 @@ func ColourJSON(l string, p colour.Palette) (string, error) {
 		l := scanner.Text()
 		switch {
 		case l[0] == '{' || l[0] == '}' || l[0] == '[' || l[0] == ']':
-			io.WriteString(b, l)
+			_, err := io.WriteString(b, l)
+			if err != nil {
+				return "", microerror.Mask(err)
+			}
 		default:
 			l = regexp.MustCompile(`(".*"): `).ReplaceAllString(l, p.Key("$1")+": ")
 			l = regexp.MustCompile(`: (".*")`).ReplaceAllString(l, ": "+p.Value("$1"))
 			l = regexp.MustCompile(`: ([^"].*)`).ReplaceAllString(l, ": "+p.Value("$1"))
-			io.WriteString(b, l)
+
+			_, err := io.WriteString(b, l)
+			if err != nil {
+				return "", microerror.Mask(err)
+			}
 		}
 	}
 
@@ -62,32 +77,15 @@ func Fields(l string, fields []string) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	var expressions []*regexp.Regexp
-	for _, f := range fields {
-		expressions = append(expressions, regexp.MustCompile(f))
-	}
+	f := fm.EntriesIter()
+	for {
+		kv, ok := f()
+		if !ok {
+			break
+		}
 
-	for _, e := range expressions {
-		f := fm.EntriesIter()
-		for {
-			kv, ok := f()
-			if !ok {
-				break
-			}
-
-			if e.MatchString(kv.Key) {
-				if kv.Key == "time" {
-					t, err := time.Parse(timeFormatFrom, kv.Value.(string))
-					if err != nil {
-						return "", microerror.Mask(err)
-					}
-
-					fm.Set(kv.Key, t.Format(timeFormatTo))
-					continue
-				}
-			} else {
-				fm.Delete(kv.Key)
-			}
+		if !containsExp(fields, kv.Key) {
+			fm.Delete(kv.Key)
 		}
 	}
 
@@ -110,4 +108,14 @@ func IsErr(l string) (bool, error) {
 	isWar := fm.Has("level") && fm.Get("level") == "warning"
 
 	return isErr || isWar, nil
+}
+
+func containsExp(fields []string, field string) bool {
+	for _, f := range fields {
+		if regexp.MustCompile(f).MatchString(field) {
+			return true
+		}
+	}
+
+	return false
 }

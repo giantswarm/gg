@@ -1,0 +1,59 @@
+{
+    "loop": "2535",
+    "message": "finding ec2 instances in `Terminating:Wait` state"
+}
+{
+    "loop": "2535",
+    "message": "did not find ec2 instances in `Terminating:Wait` state"
+}
+{
+    "loop": "2535",
+    "message": "keeping finalizers"
+}
+{
+    "loop": "2535",
+    "message": "canceling resource"
+}
+{
+    "loop": "2535",
+    "message": "finding drained drainer configs for tenant cluster"
+}
+{
+    "loop": "2535",
+    "message": "did not find drained drainer configs for tenant cluster"
+}
+{
+    "loop": "2535",
+    "message": "canceling resource"
+}
+
+{
+    "loop": "2538",
+    "message": "finding ec2 instances in `Terminating:Wait` state"
+}
+{
+    "loop": "2538",
+    "message": "did not find ec2 instances in `Terminating:Wait` state"
+}
+some invalid JSON in between
+some invalid JSON in between
+{
+    "loop": "2538",
+    "message": "keeping finalizers"
+}
+{
+    "loop": "2538",
+    "message": "canceling resource"
+}
+{
+    "loop": "2538",
+    "message": "finding drained drainer configs for tenant cluster"
+}
+{
+    "loop": "2538",
+    "message": "did not find drained drainer configs for tenant cluster"
+}
+{
+    "loop": "2538",
+    "message": "canceling resource"
+}

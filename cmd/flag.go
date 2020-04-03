@@ -9,12 +9,14 @@ import (
 )
 
 type flag struct {
+	colour  bool
 	fields  []string
 	group   string
 	selects []string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
+	cmd.PersistentFlags().BoolVarP(&f.colour, "colour", "c", true, "Whether to colourize printed output or not.")
 	cmd.PersistentFlags().StringSliceVarP(&f.fields, "field", "f", nil, "Fields the output lines should contain only.")
 	cmd.PersistentFlags().StringVarP(&f.group, "group", "g", "", "Group logs by inserting an empty line after the group end.")
 	cmd.PersistentFlags().StringSliceVarP(&f.selects, "select", "s", nil, "Select lines based on the given key:val regular expression.")

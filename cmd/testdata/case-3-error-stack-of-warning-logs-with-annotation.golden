@@ -1,0 +1,5 @@
+{
+    "annotation": "testError",
+    "resource": "tccpvpcpcx",
+    "stack": "[{\"file\":\"--REPLACED--/create.go\",\"line\":89},{\"file\":\"--REPLACED--/create.go\",\"line\":90},{\"file\":\"--REPLACED--/create.go\",\"line\":91}]"
+}
