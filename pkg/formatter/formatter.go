@@ -56,9 +56,9 @@ func ColourJSON(l string, p colour.Palette) (string, error) {
 				return "", microerror.Mask(err)
 			}
 		default:
-			l = regexp.MustCompile(`(".*"): `).ReplaceAllString(l, p.Key("$1")+": ")
-			l = regexp.MustCompile(`: (".*")`).ReplaceAllString(l, ": "+p.Value("$1"))
-			l = regexp.MustCompile(`: ([^"].*)`).ReplaceAllString(l, ": "+p.Value("$1"))
+			l = regexp.MustCompile(`(?m)^([\s]*)("[\w-.]*"): (".*")(,?)$`).ReplaceAllString(l, "$1"+p.Key("$2")+": "+p.Value("$3")+"$4")
+			l = regexp.MustCompile(`(?m)^([\s]*)("[\w-.]*"): (.*)(,?)$`).ReplaceAllString(l, "$1"+p.Key("$2")+": "+p.Value("$3")+"$4")
+			l = regexp.MustCompile(`(?m)^([\s]*)("[\w-.]*"): ([\{\[]?)$`).ReplaceAllString(l, "$1"+p.Key("$2")+" $3")
 
 			_, err := io.WriteString(b, l)
 			if err != nil {
@@ -94,7 +94,10 @@ func Fields(l string, fields []string) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	return string(newFormat), nil
+	// The line that comes in contains a newline at the end. When we transform it
+	// the Feature Map does not maintain it. So before returning it we have to add
+	// the newline back.
+	return string(newFormat) + "\n", nil
 }
 
 func IsErr(l string) (bool, error) {

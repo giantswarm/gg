@@ -94,7 +94,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// for these fields. We do not want to print logs that do not have fields we
 		// are actually looking for, even if they are errors.
 		if len(r.flag.fields) != 0 {
-			match, err := matcher.Match(l, matcher.ExpWithout(r.flag.fields, "annotation", "stack"))
+			match, err := matcher.Match(l, matcher.ExpWithout(r.flag.fields, "stack"))
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -213,7 +213,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// Finally we print the current line of the stream based on its processed
 		// selection and transformation.
 		{
-			fmt.Fprint(r.stdout, l, "\n")
+			fmt.Fprint(r.stdout, l)
 		}
 	}
 

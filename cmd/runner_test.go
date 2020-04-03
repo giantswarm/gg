@@ -148,6 +148,17 @@ func Test_Cmd_run(t *testing.T) {
 			},
 			fixture: "error.json",
 		},
+		{
+			name: "case 9, fuzzy selection tccpazs fields",
+			flag: &flag{
+				colour: false,
+				fields: []string{
+					"zone",
+					"subnet",
+				},
+			},
+			fixture: "fields.json",
+		},
 	}
 
 	for i, tc := range testCases {
