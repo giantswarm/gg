@@ -17,7 +17,6 @@ import (
 
 const (
 	timeFormatFrom = "2006-01-02T15:04:05.999999-07:00"
-	timeFormatTo   = "15:04:05"
 )
 
 func Fields(l string, fields []string) (string, error) {
@@ -43,16 +42,7 @@ func Fields(l string, fields []string) (string, error) {
 			}
 
 			if e.MatchString(kv.Key) {
-				if kv.Key == "time" {
-					t, err := time.Parse(timeFormatFrom, kv.Value.(string))
-					if err != nil {
-						return "", microerror.Mask(err)
-					}
-
-					fma.Set(kv.Key, t.Format(timeFormatTo))
-				} else {
-					fma.Set(kv.Key, kv.Value)
-				}
+				fma.Set(kv.Key, kv.Value)
 			}
 		}
 	}
@@ -116,4 +106,39 @@ func IsErr(l string) (bool, error) {
 	isWar := fm.Has("level") && fm.Get("level") == "warning"
 
 	return isErr || isWar, nil
+}
+
+func Time(l string, timeFormat string) (string, error) {
+	fm := featuremap.New()
+	err := fm.UnmarshalJSON([]byte(l))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	f := fm.EntriesIter()
+	for {
+		kv, ok := f()
+		if !ok {
+			break
+		}
+
+		if kv.Key == "time" {
+			t, err := time.Parse(timeFormatFrom, kv.Value.(string))
+			if err != nil {
+				return "", microerror.Mask(err)
+			}
+
+			fm.Set(kv.Key, t.Format(timeFormat))
+		}
+	}
+
+	newFormat, err := fm.MarshalJSON()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	// The line that comes in contains a newline at the end. When we transform it
+	// the Feature Map does not maintain it. So before returning it we have to add
+	// the newline back.
+	return string(newFormat) + "\n", nil
 }

@@ -173,6 +173,15 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			l = newLine
 		}
 
+		{
+			newLine, err := formatter.Time(l, r.flag.time)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			l = newLine
+		}
+
 		// Transform the current line of the stream so that it is colourized.
 		//
 		// Note that certain control characters are inserted into the strings in

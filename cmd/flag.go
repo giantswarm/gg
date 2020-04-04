@@ -8,11 +8,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	timeFormatTo = "15:04:05"
+)
+
 type flag struct {
 	colour  bool
 	fields  []string
 	group   string
 	selects []string
+	time    string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
@@ -20,6 +25,7 @@ func (f *flag) Init(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringSliceVarP(&f.fields, "field", "f", nil, "Fields the output lines should contain only.")
 	cmd.PersistentFlags().StringVarP(&f.group, "group", "g", "", "Group logs by inserting an empty line after the group end.")
 	cmd.PersistentFlags().StringSliceVarP(&f.selects, "select", "s", nil, "Select lines based on the given key:val regular expression.")
+	cmd.PersistentFlags().StringVarP(&f.time, "time", "t", timeFormatTo, "Time format used to print timestamps.")
 }
 
 func (f *flag) Validate() error {
@@ -65,6 +71,11 @@ func (f *flag) Validate() error {
 				return microerror.Mask(err)
 			}
 		}
+	}
+
+	// Validate -t/--time flag.
+	if f.time == "" {
+		return microerror.Maskf(invalidFlagsError, "-t/--time must not be empty")
 	}
 
 	return nil
