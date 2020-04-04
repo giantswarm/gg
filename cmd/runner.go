@@ -8,6 +8,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/giantswarm/gg/pkg/colour"
 	"github.com/giantswarm/gg/pkg/featuremap"
@@ -20,6 +21,7 @@ type runner struct {
 	flag   *flag
 	stdin  io.Reader
 	stdout io.Writer
+	viper  *viper.Viper
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
@@ -156,12 +158,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				group = value
 			}
 
-			// As soon as we find a new group value we insert an empty line and
-			// remember the new group value.
-			//
-			// Note that a new line is only inserted in case no invalid JSON got
-			// detected. This is to prevent unnecessary extra padding.
+			// As soon as we find a new group value we insert empty lines for visual
+			// separation and remember the new group value.
 			if value != group {
+				fmt.Fprint(r.stdout, "\n")
+				fmt.Fprint(r.stdout, "\n")
 				fmt.Fprint(r.stdout, "\n")
 				group = value
 			}
@@ -183,7 +184,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 
 		// Replace the given timestamps with the given time format. This should make
 		// it easier for humans to compare the times at which logs got emitted.
-		{
+		if r.flag.time != "" {
 			fm, err = formatter.Time(fm, r.flag.time)
 			if err != nil {
 				return microerror.Mask(err)

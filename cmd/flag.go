@@ -6,10 +6,14 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/gg/pkg/config"
 )
 
 const (
-	timeFormatTo = "15:04:05"
+	defaultColour = false
+	defaultGroup  = ""
+	defaultTime   = ""
 )
 
 type flag struct {
@@ -21,11 +25,11 @@ type flag struct {
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
-	cmd.PersistentFlags().BoolVarP(&f.colour, "colour", "c", true, "Whether to colourize printed output or not.")
+	cmd.PersistentFlags().BoolVarP(&f.colour, "colour", "c", config.Colour(defaultColour), "Whether to colourize printed output or not.")
 	cmd.PersistentFlags().StringSliceVarP(&f.fields, "field", "f", nil, "Fields the output lines should contain only.")
-	cmd.PersistentFlags().StringVarP(&f.group, "group", "g", "", "Group logs by inserting an empty line after the group end.")
+	cmd.PersistentFlags().StringVarP(&f.group, "group", "g", config.Group(defaultGroup), "Group logs by inserting an empty line after the group end.")
 	cmd.PersistentFlags().StringSliceVarP(&f.selects, "select", "s", nil, "Select lines based on the given key:val regular expression.")
-	cmd.PersistentFlags().StringVarP(&f.time, "time", "t", timeFormatTo, "Time format used to print timestamps.")
+	cmd.PersistentFlags().StringVarP(&f.time, "time", "t", config.Time(defaultTime), "Time format used to print timestamps.")
 }
 
 func (f *flag) Validate() error {
@@ -73,10 +77,8 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	// Validate -t/--time flag.
-	if f.time == "" {
-		return microerror.Maskf(invalidFlagsError, "-t/--time must not be empty")
-	}
+	// Validate -t/--time flag. Note that time can be empty, which means the
+	// timestamp is not modified.
 
 	return nil
 }
