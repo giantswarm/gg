@@ -1,7 +1,6 @@
 package matcher
 
 import (
-	"encoding/json"
 	"regexp"
 	"strings"
 
@@ -83,17 +82,28 @@ func Match(l string, selects []string) (bool, error) {
 }
 
 func Value(l string, s string) (string, error) {
-	var m map[string]string
-	err := json.Unmarshal([]byte(l), &m)
+	fm := featuremap.New()
+	err := fm.UnmarshalJSON([]byte(l))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	expression := regexp.MustCompile(s)
 
-	for k, v := range m {
-		if expression.MatchString(k) {
-			return v, nil
+	f := fm.EntriesIter()
+	for {
+		kv, ok := f()
+		if !ok {
+			break
+		}
+
+		if expression.MatchString(kv.Key) {
+			s, ok := kv.Value.(string)
+			if ok {
+				return s, nil
+			} else {
+				break
+			}
 		}
 	}
 

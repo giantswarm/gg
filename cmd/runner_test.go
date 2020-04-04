@@ -182,6 +182,20 @@ func Test_Cmd_run(t *testing.T) {
 			},
 			fixture: "fields.json",
 		},
+		{
+			name: "case 11, resource and message, grouped by loop",
+			flag: &flag{
+				colour: false,
+				group:  "loo",
+				fields: []string{
+					"res",
+					"mes",
+					"loo",
+				},
+				time: timeFormatTo,
+			},
+			fixture: "fields.json",
+		},
 	}
 
 	for i, tc := range testCases {
