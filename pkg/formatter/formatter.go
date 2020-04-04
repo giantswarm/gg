@@ -19,14 +19,8 @@ const (
 	timeFormatFrom = "2006-01-02T15:04:05.999999-07:00"
 )
 
-func Fields(l string, fields []string) (string, error) {
-	fma := featuremap.New()
-	fmb := featuremap.New()
-
-	err := fmb.UnmarshalJSON([]byte(l))
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
+func Fields(fm *featuremap.FeatureMap, fields []string) (*featuremap.FeatureMap, error) {
+	nfm := featuremap.New()
 
 	var expressions []*regexp.Regexp
 	for _, f := range fields {
@@ -34,7 +28,7 @@ func Fields(l string, fields []string) (string, error) {
 	}
 
 	for _, e := range expressions {
-		f := fmb.EntriesIter()
+		f := fm.EntriesIter()
 		for {
 			kv, ok := f()
 			if !ok {
@@ -42,32 +36,29 @@ func Fields(l string, fields []string) (string, error) {
 			}
 
 			if e.MatchString(kv.Key) {
-				fma.Set(kv.Key, kv.Value)
+				nfm.Set(kv.Key, kv.Value)
 			}
 		}
 	}
 
-	newFormat, err := fma.MarshalJSON()
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	// The line that comes in contains a newline at the end. When we transform it
-	// the Feature Map does not maintain it. So before returning it we have to add
-	// the newline back.
-	return string(newFormat) + "\n", nil
+	return nfm, nil
 }
 
-func IndentWithColour(l string, p colour.Palette) (string, error) {
+func IndentWithColour(fm *featuremap.FeatureMap, p colour.Palette) (string, error) {
 	var scanner *bufio.Scanner
 	{
-		b := &bytes.Buffer{}
-		err := json.Indent(b, []byte(l), "", "    ")
+		byt, err := fm.MarshalJSON()
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
 
-		scanner = bufio.NewScanner(b)
+		buf := &bytes.Buffer{}
+		err = json.Indent(buf, byt, "", "    ")
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
+		scanner = bufio.NewScanner(buf)
 		scanner.Split(splitter.New().Split)
 	}
 
@@ -91,14 +82,14 @@ func IndentWithColour(l string, p colour.Palette) (string, error) {
 			// Match string key-value pairs.
 			//
 			//     "kind": "unknown",
-			//     "resource": "basedomain",
+			//     "resource": "basedomain"
 			//
 			l = regexp.MustCompile(`(?m)^([\s]*)("[\w-.]*"): (".*")(,?)$`).ReplaceAllString(l, "$1"+p.Key("$2")+": "+p.Value("$3")+"$4")
 
 			// Match other key-value pairs.
 			//
 			//     "line": 217,
-			//     "resources": null,
+			//     "resources": null
 			//
 			l = regexp.MustCompile(`(?m)^([\s]*)("[\w-.]*"): (.*)(,?)$`).ReplaceAllString(l, "$1"+p.Key("$2")+": "+p.Value("$3")+"$4")
 
@@ -112,26 +103,14 @@ func IndentWithColour(l string, p colour.Palette) (string, error) {
 	return b.String(), nil
 }
 
-func IsErr(l string) (bool, error) {
-	fm := featuremap.New()
-	err := fm.UnmarshalJSON([]byte(l))
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
+func IsErr(fm *featuremap.FeatureMap) (bool, error) {
 	isErr := fm.Has("level") && fm.Get("level") == "error"
 	isWar := fm.Has("level") && fm.Get("level") == "warning"
 
 	return isErr || isWar, nil
 }
 
-func Time(l string, timeFormat string) (string, error) {
-	fm := featuremap.New()
-	err := fm.UnmarshalJSON([]byte(l))
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
+func Time(fm *featuremap.FeatureMap, timeFormat string) (*featuremap.FeatureMap, error) {
 	f := fm.EntriesIter()
 	for {
 		kv, ok := f()
@@ -142,20 +121,12 @@ func Time(l string, timeFormat string) (string, error) {
 		if kv.Key == "time" {
 			t, err := time.Parse(timeFormatFrom, kv.Value.(string))
 			if err != nil {
-				return "", microerror.Mask(err)
+				return nil, microerror.Mask(err)
 			}
 
 			fm.Set(kv.Key, t.Format(timeFormat))
 		}
 	}
 
-	newFormat, err := fm.MarshalJSON()
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	// The line that comes in contains a newline at the end. When we transform it
-	// the Feature Map does not maintain it. So before returning it we have to add
-	// the newline back.
-	return string(newFormat) + "\n", nil
+	return fm, nil
 }

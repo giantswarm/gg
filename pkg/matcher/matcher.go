@@ -4,8 +4,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/giantswarm/microerror"
-
 	"github.com/giantswarm/gg/pkg/featuremap"
 )
 
@@ -45,7 +43,7 @@ func ExpWithout(list []string, without ...string) []string {
 	return Exp(filtered)
 }
 
-func Match(l string, selects []string) (bool, error) {
+func Match(fm *featuremap.FeatureMap, selects []string) (bool, error) {
 	var expressions [][]*regexp.Regexp
 	{
 		for _, s := range selects {
@@ -59,18 +57,10 @@ func Match(l string, selects []string) (bool, error) {
 	}
 
 	var matched int
-	{
-		fm := featuremap.New()
-		err := fm.UnmarshalJSON([]byte(l))
-		if err != nil {
-			return false, microerror.Mask(err)
-		}
-
-		for _, pair := range expressions {
-			matches := pairMatchesMapping(pair, fm)
-			if matches {
-				matched++
-			}
+	for _, pair := range expressions {
+		matches := pairMatchesMapping(pair, fm)
+		if matches {
+			matched++
 		}
 	}
 
@@ -81,13 +71,7 @@ func Match(l string, selects []string) (bool, error) {
 	return false, nil
 }
 
-func Value(l string, s string) (string, error) {
-	fm := featuremap.New()
-	err := fm.UnmarshalJSON([]byte(l))
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
+func Value(fm *featuremap.FeatureMap, s string) (string, error) {
 	expression := regexp.MustCompile(s)
 
 	f := fm.EntriesIter()
