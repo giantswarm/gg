@@ -81,9 +81,26 @@ func IndentWithColour(l string, p colour.Palette) (string, error) {
 				return "", microerror.Mask(err)
 			}
 		default:
-			l = regexp.MustCompile(`(?m)^([\s]*)("[\w-.]*"): (".*")(,?)$`).ReplaceAllString(l, "$1"+p.Key("$2")+": "+p.Value("$3")+"$4")
-			l = regexp.MustCompile(`(?m)^([\s]*)("[\w-.]*"): (.*)(,?)$`).ReplaceAllString(l, "$1"+p.Key("$2")+": "+p.Value("$3")+"$4")
+			// Match the start of objects and arrays.
+			//
+			//     "stack" {
+			//     "stack" [
+			//
 			l = regexp.MustCompile(`(?m)^([\s]*)("[\w-.]*"): ([\{\[]?)$`).ReplaceAllString(l, "$1"+p.Key("$2")+" $3")
+
+			// Match string key-value pairs.
+			//
+			//     "kind": "unknown",
+			//     "resource": "basedomain",
+			//
+			l = regexp.MustCompile(`(?m)^([\s]*)("[\w-.]*"): (".*")(,?)$`).ReplaceAllString(l, "$1"+p.Key("$2")+": "+p.Value("$3")+"$4")
+
+			// Match other key-value pairs.
+			//
+			//     "line": 217,
+			//     "resources": null,
+			//
+			l = regexp.MustCompile(`(?m)^([\s]*)("[\w-.]*"): (.*)(,?)$`).ReplaceAllString(l, "$1"+p.Key("$2")+": "+p.Value("$3")+"$4")
 
 			_, err := io.WriteString(b, l)
 			if err != nil {

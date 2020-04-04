@@ -1,0 +1,30 @@
+{
+    "resource": "tccpazs",
+    "message": "AZ subnet mappings: map[string]tccpazs.mapping{\"eu-central-1a\":tccpazs.mapping{AWSCNI:tccpazs.network{Subnet:tccpazs.subnet{CIDR:net.IPNet{IP:net.IP{0xa, 0x2, 0x0, 0x0}, Mask:net.IPMask{0xff, 0xff, 0xc0, 0x0}}, ID:\"subnet-0439bd67b27744ce3\"}}, Public:tccpazs.network{Subnet:tccpazs.subnet{CIDR:net.IPNet{IP:net.IP{0xa, 0x1, 0x5, 0x0}, Mask:net.IPMask{0xff, 0xff, 0xff, 0xe0}}, ID:\"subnet-0f5598477fcd1ff76\"}}, Private:tccpazs.network{Subnet:tccpazs.subnet{CIDR:net.IPNet{IP:net.IP{0xa, 0x1, 0x5, 0x20}, Mask:net.IPMask{0xff, 0xff, 0xff, 0xe0}}, ID:\"subnet-05d1c720f6b7b551c\"}}, RequiredByCR:true}, \"eu-central-1b\":tccpazs.mapping{AWSCNI:tccpazs.network{Subnet:tccpazs.subnet{CIDR:net.IPNet{IP:net.IP{0xa, 0x2, 0x40, 0x0}, Mask:net.IPMask{0xff, 0xff, 0xc0, 0x0}}, ID:\"subnet-07629cea83de2b7a2\"}}, Public:tccpazs.network{Subnet:tccpazs.subnet{CIDR:net.IPNet{IP:net.IP{0xa, 0x1, 0x5, 0x40}, Mask:net.IPMask{0xff, 0xff, 0xff, 0xe0}}, ID:\"subnet-089a885354308906e\"}}, Private:tccpazs.network{Subnet:tccpazs.subnet{CIDR:net.IPNet{IP:net.IP(nil), Mask:net.IPMask(nil)}, ID:\"\"}}, RequiredByCR:true}, \"eu-central-1c\":tccpazs.mapping{AWSCNI:tccpazs.network{Subnet:tccpazs.subnet{CIDR:net.IPNet{IP:net.IP{0xa, 0x2, 0x80, 0x0}, Mask:net.IPMask{0xff, 0xff, 0xc0, 0x0}}, ID:\"subnet-09af1b8cd32851f00\"}}, Public:tccpazs.network{Subnet:tccpazs.subnet{CIDR:net.IPNet{IP:net.IP{0xa, 0x1, 0x5, 0x80}, Mask:net.IPMask{0xff, 0xff, 0xff, 0xe0}}, ID:\"subnet-0b9d91e27fa74d62e\"}}, Private:tccpazs.network{Subnet:tccpazs.subnet{CIDR:net.IPNet{IP:net.IP(nil), Mask:net.IPMask(nil)}, ID:\"\"}}, RequiredByCR:true}}",
+    "time": "13:57:09"
+}
+{
+    "resource": "tccpazs",
+    "message": "computed controller context spec",
+    "time": "13:57:09"
+}
+{
+    "resource": "tccpazs",
+    "message": "computed controller context spec",
+    "time": "13:57:09"
+}
+{
+    "resource": "tccpazs",
+    "message": "computed controller context spec",
+    "time": "13:57:09"
+}
+{
+    "resource": "tccpi",
+    "message": "finding the tenant cluster's control plane initializer cloud formation stack",
+    "time": "13:57:09"
+}
+{
+    "resource": "basedomain",
+    "message": "retrying due to error",
+    "time": "09:19:25"
+}

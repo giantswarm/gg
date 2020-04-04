@@ -114,8 +114,8 @@ func pairMatchesMapping(pair []*regexp.Regexp, fm *featuremap.FeatureMap) bool {
 		// expression. Then we only compare the key and if it matches we select the
 		// line.
 		s, ok := kv.Value.(string)
-		if !ok {
-			return matchKey
+		if matchKey && !ok {
+			return true
 		}
 
 		matchVal := pair[1].MatchString(s)

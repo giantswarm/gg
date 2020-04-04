@@ -169,6 +169,19 @@ func Test_Cmd_run(t *testing.T) {
 			},
 			fixture: "fields.json",
 		},
+		{
+			name: "case 10, resource, message, time, fields only",
+			flag: &flag{
+				colour: false,
+				fields: []string{
+					"res",
+					"mes",
+					"tim",
+				},
+				time: timeFormatTo,
+			},
+			fixture: "fields.json",
+		},
 	}
 
 	for i, tc := range testCases {
