@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"regexp"
+	"time"
 
 	"github.com/giantswarm/microerror"
 
@@ -19,25 +20,59 @@ const (
 	timeFormatTo   = "15:04:05"
 )
 
-const (
-	indentNone = ""
-	indentFour = "    "
-)
+func Fields(l string, fields []string) (string, error) {
+	fma := featuremap.New()
+	fmb := featuremap.New()
 
-//
-//     if kv.Key == "time" {
-//       t, err := time.Parse(timeFormatFrom, kv.Value.(string))
-//       if err != nil {
-//         return "", microerror.Mask(err)
-//       }
-//       fm.Set(kv.Key, t.Format(timeFormatTo))
-//     }
+	err := fmb.UnmarshalJSON([]byte(l))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
 
-func ColourJSON(l string, p colour.Palette) (string, error) {
+	var expressions []*regexp.Regexp
+	for _, f := range fields {
+		expressions = append(expressions, regexp.MustCompile(f))
+	}
+
+	for _, e := range expressions {
+		f := fmb.EntriesIter()
+		for {
+			kv, ok := f()
+			if !ok {
+				break
+			}
+
+			if e.MatchString(kv.Key) {
+				if kv.Key == "time" {
+					t, err := time.Parse(timeFormatFrom, kv.Value.(string))
+					if err != nil {
+						return "", microerror.Mask(err)
+					}
+
+					fma.Set(kv.Key, t.Format(timeFormatTo))
+				} else {
+					fma.Set(kv.Key, kv.Value)
+				}
+			}
+		}
+	}
+
+	newFormat, err := fma.MarshalJSON()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	// The line that comes in contains a newline at the end. When we transform it
+	// the Feature Map does not maintain it. So before returning it we have to add
+	// the newline back.
+	return string(newFormat) + "\n", nil
+}
+
+func IndentWithColour(l string, p colour.Palette) (string, error) {
 	var scanner *bufio.Scanner
 	{
 		b := &bytes.Buffer{}
-		err := json.Indent(b, []byte(l), "", indentFour)
+		err := json.Indent(b, []byte(l), "", "    ")
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -70,36 +105,6 @@ func ColourJSON(l string, p colour.Palette) (string, error) {
 	return b.String(), nil
 }
 
-func Fields(l string, fields []string) (string, error) {
-	fm := featuremap.New()
-	err := fm.UnmarshalJSON([]byte(l))
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	f := fm.EntriesIter()
-	for {
-		kv, ok := f()
-		if !ok {
-			break
-		}
-
-		if !containsExp(fields, kv.Key) {
-			fm.Delete(kv.Key)
-		}
-	}
-
-	newFormat, err := fm.MarshalJSON()
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	// The line that comes in contains a newline at the end. When we transform it
-	// the Feature Map does not maintain it. So before returning it we have to add
-	// the newline back.
-	return string(newFormat) + "\n", nil
-}
-
 func IsErr(l string) (bool, error) {
 	fm := featuremap.New()
 	err := fm.UnmarshalJSON([]byte(l))
@@ -111,14 +116,4 @@ func IsErr(l string) (bool, error) {
 	isWar := fm.Has("level") && fm.Get("level") == "warning"
 
 	return isErr || isWar, nil
-}
-
-func containsExp(fields []string, field string) bool {
-	for _, f := range fields {
-		if regexp.MustCompile(f).MatchString(field) {
-			return true
-		}
-	}
-
-	return false
 }

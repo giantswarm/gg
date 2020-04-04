@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 
 	"github.com/giantswarm/microerror"
@@ -188,7 +187,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				p = colour.NewNoColourPalette()
 			}
 
-			newLine, err := formatter.ColourJSON(l, p)
+			newLine, err := formatter.IndentWithColour(l, p)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -202,7 +201,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				p = colour.NewNoColourPalette()
 			}
 
-			newLine, err := formatter.ColourJSON(l, p)
+			newLine, err := formatter.IndentWithColour(l, p)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -223,14 +222,4 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
-}
-
-func containsExp(fields []string, field string) bool {
-	for _, f := range fields {
-		if regexp.MustCompile(f).MatchString(field) {
-			return true
-		}
-	}
-
-	return false
 }

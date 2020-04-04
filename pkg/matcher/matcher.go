@@ -5,8 +5,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/giantswarm/gg/pkg/featuremap"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/gg/pkg/featuremap"
 )
 
 // Exp is used to transform single key expressions into key-value expressions as
