@@ -8,7 +8,6 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/giantswarm/gg/pkg/colour"
 	"github.com/giantswarm/gg/pkg/featuremap"
@@ -21,7 +20,6 @@ type runner struct {
 	flag   *flag
 	stdin  io.Reader
 	stdout io.Writer
-	viper  *viper.Viper
 }
 
 func (r *runner) Run(cmd *cobra.Command, args []string) error {
