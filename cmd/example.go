@@ -6,7 +6,7 @@ var example = `    The following examples make use of a basic.json file which co
     golden file tests. Further note that you can configure flag defaults via a
     config file.
 
-        /Users/xh3b4sd/.config/gg/config.yaml
+        ~/.config/gg/config.yaml
 
     Config file defaults are supported for the following flags.
 

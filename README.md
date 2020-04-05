@@ -24,7 +24,7 @@ Examples:
     golden file tests. Further note that you can configure flag defaults via a
     config file.
 
-        /Users/xh3b4sd/.config/gg/config.yaml
+        ~/.config/gg/config.yaml
 
     Config file defaults are supported for the following flags.
 
@@ -75,12 +75,12 @@ Available Commands:
   version     Print version information.
 
 Flags:
-  -c, --colour           Whether to colourize printed output or not. (default true)
+  -c, --colour           Whether to colourize printed output or not.
   -f, --field strings    Fields the output lines should contain only.
-  -g, --group string     Group logs by inserting an empty line after the group end. (default "loop")
+  -g, --group string     Group logs by inserting an empty line after the group end.
   -h, --help             help for gg
   -s, --select strings   Select lines based on the given key:val regular expression.
-  -t, --time string      Time format used to print timestamps. (default "15:04:05")
+  -t, --time string      Time format used to print timestamps.
 
 Use "gg [command] --help" for more information about a command.
 ```

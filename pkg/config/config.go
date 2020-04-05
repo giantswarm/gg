@@ -2,6 +2,7 @@ package config
 
 import (
 	"io/ioutil"
+	"os"
 	"os/user"
 	"path/filepath"
 
@@ -52,7 +53,9 @@ func Time(time string) string {
 
 func fromFile(v interface{}) {
 	b, err := ioutil.ReadFile(name())
-	if err != nil {
+	if os.IsNotExist(err) {
+		return
+	} else if err != nil {
 		panic(err)
 	}
 
@@ -65,7 +68,7 @@ func fromFile(v interface{}) {
 // name returns the config file name as absolute path according to the current
 // OS User known to the running process.
 //
-//     /Users/xh3b4sd/.config/gg/config.yaml
+//     ~/.config/gg/config.yaml
 //
 func name() string {
 	u, err := user.Current()
