@@ -166,8 +166,8 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			}
 		}
 
-		// Replace the given timestamps with the given time format. This should make
-		// it easier for humans to compare the times at which logs got emitted.
+		// Replace the existing timestamps with the given time format. This should
+		// make it easier for humans to compare the times at which logs got emitted.
 		if r.flag.time != "" {
 			fm, err = formatter.Time(fm, r.flag.time)
 			if err != nil {
