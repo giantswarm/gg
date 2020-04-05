@@ -27,6 +27,8 @@
     "message": "canceling resource"
 }
 
+
+
 {
     "loop": "2538",
     "message": "finding ec2 instances in `Terminating:Wait` state"

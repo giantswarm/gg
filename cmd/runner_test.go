@@ -17,7 +17,13 @@ import (
 	"github.com/giantswarm/gg/pkg/unittest"
 )
 
-var update = goflag.Bool("update", false, "update .golden file")
+const (
+	customTime = "15:04:05"
+)
+
+var (
+	update = goflag.Bool("update", false, "update .golden file")
+)
 
 // Test_Cmd_run tests log parsing based on different flag configurations.
 //
@@ -141,7 +147,7 @@ func Test_Cmd_run(t *testing.T) {
 					"lev:err",
 					"mes:metr",
 				},
-				time: defaultTime,
+				time: customTime,
 			},
 			fixture: "error.json",
 		},
@@ -153,7 +159,7 @@ func Test_Cmd_run(t *testing.T) {
 					"cal:mic",
 					"lev:err",
 				},
-				time: defaultTime,
+				time: customTime,
 			},
 			fixture: "error.json",
 		},
