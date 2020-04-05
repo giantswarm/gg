@@ -99,20 +99,6 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 			}
 		}
 
-		// Filter errors without stack and annotation fields, in case we are looking
-		// for these fields. We do not want to print logs that do not have fields we
-		// are actually looking for, even if they are errors.
-		if len(r.flag.fields) != 0 {
-			match, err := matcher.Match(fm, matcher.ExpWithout(r.flag.fields, "stack"))
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			if !match && isErr {
-				continue
-			}
-		}
-
 		// Filter the current line of the stream based on the given expression with
 		// the -g/--group flag. We do not want to print lines that do not have the
 		// fields we want to group by.

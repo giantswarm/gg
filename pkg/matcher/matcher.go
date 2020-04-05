@@ -24,25 +24,6 @@ func Exp(list []string) []string {
 	return pairs
 }
 
-func ExpWithout(list []string, without ...string) []string {
-	var filtered []string
-	{
-		for _, s := range list {
-			split := strings.Split(s, ":")
-
-			if ContainsExp(without, s) {
-				continue
-			}
-
-			if len(split) == 1 {
-				filtered = append(filtered, s)
-			}
-		}
-	}
-
-	return Exp(filtered)
-}
-
 func Match(fm *featuremap.FeatureMap, selects []string) (bool, error) {
 	var expressions [][]*regexp.Regexp
 	{
@@ -115,16 +96,6 @@ func pairMatchesMapping(pair []*regexp.Regexp, fm *featuremap.FeatureMap) bool {
 		matchVal := pair[1].MatchString(s)
 
 		if matchKey && matchVal {
-			return true
-		}
-	}
-
-	return false
-}
-
-func ContainsExp(fields []string, field string) bool {
-	for _, f := range fields {
-		if regexp.MustCompile(field).MatchString(f) {
 			return true
 		}
 	}
