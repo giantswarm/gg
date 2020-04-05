@@ -1,0 +1,38 @@
+{
+    "caller": "github.com/giantswarm/microkit/server/server.go:413",
+    "level": "error",
+    "message": "stop endpoint processing due to error",
+    "stack" {
+        "kind": "clusterNotFoundError",
+        "stack" [
+            {
+                "file": "/go/src/github.com/giantswarm/cluster-service/server/endpoint/cluster/searcher/endpoint.go",
+                "line": 105
+            },
+            {
+                "file": "/go/pkg/mod/github.com/giantswarm/microkit@v0.2.0/server/server.go",
+                "line": 369
+            }
+        ]
+    },
+    "time": "15:11:10"
+}
+{
+    "caller": "github.com/giantswarm/microkit/server/server.go:413",
+    "level": "error",
+    "message": "stop endpoint processing due to error",
+    "stack" {
+        "kind": "clusterNotFoundError",
+        "stack" [
+            {
+                "file": "/go/src/github.com/giantswarm/cluster-service/server/endpoint/cluster/searcher/endpoint.go",
+                "line": 105
+            },
+            {
+                "file": "/go/pkg/mod/github.com/giantswarm/microkit@v0.2.0/server/server.go",
+                "line": 369
+            }
+        ]
+    },
+    "time": "15:11:12"
+}

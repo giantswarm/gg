@@ -1,11 +1,10 @@
 package matcher
 
 import (
-	"encoding/json"
 	"regexp"
 	"strings"
 
-	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/gg/pkg/featuremap"
 )
 
 // Exp is used to transform single key expressions into key-value expressions as
@@ -25,26 +24,7 @@ func Exp(list []string) []string {
 	return pairs
 }
 
-func ExpWithout(list []string, without ...string) []string {
-	var filtered []string
-	{
-		for _, s := range list {
-			split := strings.Split(s, ":")
-
-			if ContainsExp(without, s) {
-				continue
-			}
-
-			if len(split) == 1 {
-				filtered = append(filtered, s)
-			}
-		}
-	}
-
-	return Exp(filtered)
-}
-
-func Match(l string, selects []string) (bool, error) {
+func Match(fm *featuremap.FeatureMap, selects []string) (bool, error) {
 	var expressions [][]*regexp.Regexp
 	{
 		for _, s := range selects {
@@ -57,16 +37,9 @@ func Match(l string, selects []string) (bool, error) {
 		}
 	}
 
-	var m map[string]interface{}
-	err := json.Unmarshal([]byte(l), &m)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
 	var matched int
-
 	for _, pair := range expressions {
-		matches := pairMatchesMapping(pair, m)
+		matches := pairMatchesMapping(pair, fm)
 		if matches {
 			matched++
 		}
@@ -79,42 +52,50 @@ func Match(l string, selects []string) (bool, error) {
 	return false, nil
 }
 
-func Value(l string, s string) (string, error) {
-	var m map[string]string
-	err := json.Unmarshal([]byte(l), &m)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
+func Value(fm *featuremap.FeatureMap, s string) (string, error) {
 	expression := regexp.MustCompile(s)
 
-	for k, v := range m {
-		if expression.MatchString(k) {
-			return v, nil
+	f := fm.EntriesIter()
+	for {
+		kv, ok := f()
+		if !ok {
+			break
+		}
+
+		if expression.MatchString(kv.Key) {
+			s, ok := kv.Value.(string)
+			if ok {
+				return s, nil
+			} else {
+				break
+			}
 		}
 	}
 
 	return "", nil
 }
 
-func pairMatchesMapping(pair []*regexp.Regexp, m map[string]interface{}) bool {
-	for k, v := range m {
-		s, ok := v.(string)
+func pairMatchesMapping(pair []*regexp.Regexp, fm *featuremap.FeatureMap) bool {
+	f := fm.EntriesIter()
+	for {
+		kv, ok := f()
 		if !ok {
-			continue
+			break
 		}
-		matches := pair[0].MatchString(k) && pair[1].MatchString(s)
-		if matches {
+
+		matchKey := pair[0].MatchString(kv.Key)
+
+		// In case the value is not a string we cannot match it against the given
+		// expression. Then we only compare the key and if it matches we select the
+		// line.
+		s, ok := kv.Value.(string)
+		if matchKey && !ok {
 			return true
 		}
-	}
 
-	return false
-}
+		matchVal := pair[1].MatchString(s)
 
-func ContainsExp(fields []string, field string) bool {
-	for _, f := range fields {
-		if regexp.MustCompile(field).MatchString(f) {
+		if matchKey && matchVal {
 			return true
 		}
 	}

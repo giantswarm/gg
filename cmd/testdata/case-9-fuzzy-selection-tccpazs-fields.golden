@@ -1,0 +1,57 @@
+{
+    "availability-zone": "eu-central-1a",
+    "aws-cni-subnet" {
+        "IP": "10.2.0.0",
+        "Mask": "///AAA=="
+    },
+    "private-subnet" {
+        "IP": "10.1.5.32",
+        "Mask": "////4A=="
+    },
+    "public-subnet" {
+        "IP": "10.1.5.0",
+        "Mask": "////4A=="
+    },
+    "subnet-id" {
+        "IP": "10.1.5.0",
+        "Mask": "////4A=="
+    }
+}
+{
+    "availability-zone": "eu-central-1b",
+    "aws-cni-subnet" {
+        "IP": "10.2.64.0",
+        "Mask": "///AAA=="
+    },
+    "private-subnet" {
+        "IP": "",
+        "Mask": null
+    },
+    "public-subnet" {
+        "IP": "10.1.5.64",
+        "Mask": "////4A=="
+    },
+    "subnet-id" {
+        "IP": "10.1.5.64",
+        "Mask": "////4A=="
+    }
+}
+{
+    "availability-zone": "eu-central-1c",
+    "aws-cni-subnet" {
+        "IP": "10.2.128.0",
+        "Mask": "///AAA=="
+    },
+    "private-subnet" {
+        "IP": "",
+        "Mask": null
+    },
+    "public-subnet" {
+        "IP": "10.1.5.128",
+        "Mask": "////4A=="
+    },
+    "subnet-id" {
+        "IP": "10.1.5.128",
+        "Mask": "////4A=="
+    }
+}

@@ -1,4 +1,4 @@
-package formatter
+package featuremap
 
 import (
 	"bytes"
@@ -17,14 +17,14 @@ type KVPair struct {
 	Value interface{}
 }
 
-// OrderedMap has similar operations as the default map, but maintains the order
+// FeatureMap has similar operations as the default map, but maintains the order
 // of inserted keys. Similar to map, all single key operations e.g. get, set and
 // delete runs at O(1). Although the JSON spec says the keys order of an object
 // should not matter, sometimes the order of JSON objects and their keys matters
 // when printing them for humans. Therefore we have to maintain the object keys
 // in the same order as they come in.
 //
-// Disclaimer, same as Go's default map, OrderedMap is not safe for concurrent
+// Disclaimer, same as Go's default map, FeatureMap is not safe for concurrent
 // use. If you need atomic access, may use a sync.Mutex to synchronize.
 //
 // More references may be found below.
@@ -36,104 +36,99 @@ type KVPair struct {
 //     port OrderedDict      https://github.com/cevaris/ordered_map
 //     original proposal     https://gitlab.com/c0b/go-ordered-json/-/blob/49bbdab258c2e707b671515c36308ea48134970d/ordered.go
 //
-type OrderedMap struct {
-	m    map[string]interface{}
-	l    *list.List
+type FeatureMap struct {
+	dict map[string]interface{}
+	list *list.List
 	keys map[string]*list.Element
 }
 
-func NewOrderedMap() *OrderedMap {
-	return &OrderedMap{
-		m:    make(map[string]interface{}),
-		l:    list.New(),
+func New() *FeatureMap {
+	return &FeatureMap{
+		dict: make(map[string]interface{}),
+		list: list.New(),
 		keys: make(map[string]*list.Element),
 	}
 }
 
-func NewOrderedMapFromKVPairs(pairs []*KVPair) *OrderedMap {
-	om := NewOrderedMap()
-	for _, pair := range pairs {
-		om.Set(pair.Key, pair.Value)
-	}
-	return om
-}
-
-func (om *OrderedMap) Delete(key string) (value interface{}, ok bool) {
-	value, ok = om.m[key]
+func (fm *FeatureMap) Delete(key string) (value interface{}, ok bool) {
+	value, ok = fm.dict[key]
 	if ok {
-		om.l.Remove(om.keys[key])
-		delete(om.keys, key)
-		delete(om.m, key)
+		fm.list.Remove(fm.keys[key])
+		delete(fm.keys, key)
+		delete(fm.dict, key)
 	}
 	return
 }
 
-func (om *OrderedMap) EntriesIter() func() (*KVPair, bool) {
-	e := om.l.Front()
+func (fm *FeatureMap) EntriesIter() func() (*KVPair, bool) {
+	e := fm.list.Front()
 	return func() (*KVPair, bool) {
 		if e != nil {
 			key := e.Value.(string)
 			e = e.Next()
-			return &KVPair{key, om.m[key]}, true
+			return &KVPair{key, fm.dict[key]}, true
 		}
 		return nil, false
 	}
 }
 
-func (om *OrderedMap) EntriesReverseIter() func() (*KVPair, bool) {
-	e := om.l.Back()
+func (fm *FeatureMap) EntriesReverseIter() func() (*KVPair, bool) {
+	e := fm.list.Back()
 	return func() (*KVPair, bool) {
 		if e != nil {
 			key := e.Value.(string)
 			e = e.Prev()
-			return &KVPair{key, om.m[key]}, true
+			return &KVPair{key, fm.dict[key]}, true
 		}
 		return nil, false
 	}
 }
 
-func (om *OrderedMap) Get(key string) interface{} {
-	return om.m[key]
+func (fm *FeatureMap) Get(key string) interface{} {
+	return fm.dict[key]
 }
 
-func (om *OrderedMap) GetValue(key string) (value interface{}, ok bool) {
-	value, ok = om.m[key]
+func (fm *FeatureMap) GetValue(key string) (value interface{}, ok bool) {
+	value, ok = fm.dict[key]
 	return
 }
 
-func (om *OrderedMap) Has(key string) bool {
-	_, ok := om.m[key]
+func (fm *FeatureMap) Has(key string) bool {
+	_, ok := fm.dict[key]
 	return ok
 }
 
-func (om *OrderedMap) Keys() []string {
+func (fm *FeatureMap) Keys() []string {
 	var keys []string
-	for e := om.l.Front(); e != nil; e = e.Next() {
+	for e := fm.list.Front(); e != nil; e = e.Next() {
 		keys = append(keys, e.Value.(string))
 	}
 
 	return keys
 }
 
-func (om *OrderedMap) Len() int {
-	return len(om.m)
+func (fm *FeatureMap) Len() int {
+	return len(fm.dict)
 }
 
-func (om *OrderedMap) MarshalJSON() ([]byte, error) {
+func (fm *FeatureMap) MarshalJSON() ([]byte, error) {
 	res := append([]byte{}, '{')
 
-	front, back := om.l.Front(), om.l.Back()
+	front, back := fm.list.Front(), fm.list.Back()
 	for e := front; e != nil; e = e.Next() {
 		k := e.Value.(string)
+		v := fm.dict[k]
+
 		res = append(res, fmt.Sprintf("%q:", k)...)
 
 		var b []byte
-		b, err := json.Marshal(om.m[k])
+		b, err := json.Marshal(v)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		res = append(res, b...)
+		res = append(res, string(b)...)
+
 		if e != back {
 			res = append(res, ',')
 		}
@@ -142,14 +137,14 @@ func (om *OrderedMap) MarshalJSON() ([]byte, error) {
 	return append(res, '}'), nil
 }
 
-func (om *OrderedMap) Set(key string, value interface{}) {
-	if _, ok := om.m[key]; !ok {
-		om.keys[key] = om.l.PushBack(key)
+func (fm *FeatureMap) Set(key string, value interface{}) {
+	if _, ok := fm.dict[key]; !ok {
+		fm.keys[key] = fm.list.PushBack(key)
 	}
-	om.m[key] = value
+	fm.dict[key] = value
 }
 
-func (om *OrderedMap) UnmarshalJSON(data []byte) error {
+func (fm *FeatureMap) UnmarshalJSON(data []byte) error {
 	dec := json.NewDecoder(bytes.NewReader(data))
 	dec.UseNumber()
 
@@ -162,7 +157,7 @@ func (om *OrderedMap) UnmarshalJSON(data []byte) error {
 		return microerror.Maskf(executionFailedError, "data must be JSON object")
 	}
 
-	err = om.parseobject(dec)
+	err = fm.parseobject(dec)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -175,16 +170,16 @@ func (om *OrderedMap) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (om *OrderedMap) Values() []string {
-	var values []string
-	for _, k := range om.Keys() {
-		values = append(values, om.m[k].(string))
+func (fm *FeatureMap) Values() []interface{} {
+	var values []interface{}
+	for _, k := range fm.Keys() {
+		values = append(values, fm.dict[k])
 	}
 
 	return values
 }
 
-func (om *OrderedMap) parseobject(dec *json.Decoder) error {
+func (fm *FeatureMap) parseobject(dec *json.Decoder) error {
 	for dec.More() {
 		t, err := dec.Token()
 		if err != nil {
@@ -209,9 +204,8 @@ func (om *OrderedMap) parseobject(dec *json.Decoder) error {
 			return microerror.Mask(err)
 		}
 
-		// om.keys = append(om.keys, key)
-		om.keys[key] = om.l.PushBack(key)
-		om.m[key] = value
+		fm.keys[key] = fm.list.PushBack(key)
+		fm.dict[key] = value
 	}
 
 	t, err := dec.Token()
@@ -229,7 +223,7 @@ func handledelim(t json.Token, dec *json.Decoder) (interface{}, error) {
 	if delim, ok := t.(json.Delim); ok {
 		switch delim {
 		case '{':
-			om2 := NewOrderedMap()
+			om2 := New()
 			err := om2.parseobject(dec)
 			if err != nil {
 				return nil, microerror.Mask(err)

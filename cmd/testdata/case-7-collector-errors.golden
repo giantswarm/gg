@@ -1,0 +1,7 @@
+{
+    "caller": "github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/exporterkit/collector/set.go:92",
+    "level": "error",
+    "message": "failed collecting metrics",
+    "stack": "[{/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/exporterkit/collector/set.go:92: } {/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/exporterkit/collector/set.go:83: } {/go/src/github.com/giantswarm/cluster-operator/service/collector/cluster.go:77: } {awsclusters.infrastructure.giantswarm.io \"k55y7\" not found}]",
+    "time": "09:08:41"
+}

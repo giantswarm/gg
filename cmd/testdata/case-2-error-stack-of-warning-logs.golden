@@ -1,0 +1,74 @@
+{
+    "resource": "tccpvpcpcx",
+    "stack": "[{\"file\":\"--REPLACED--/create.go\",\"line\":89},{\"file\":\"--REPLACED--/create.go\",\"line\":90},{\"file\":\"--REPLACED--/create.go\",\"line\":91}]"
+}
+{
+    "resource": "tccpvpcpcx",
+    "stack": "[{--REPLACED--/create.go:52: } {--REPLACED--/create.go:67: expected one vpc, got 2} {execution failed error}]"
+}
+{
+    "resource": "tenantclients",
+    "stack": "[{/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/operatorkit/resource/wrapper/retryresource/basic_resource.go:76: } {/go/src/github.com/giantswarm/cluster-operator/service/controller/resource/tenantclients/delete.go:12: } {/go/src/github.com/giantswarm/cluster-operator/service/controller/resource/tenantclients/resource.go:95: } {/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/k8sclient/clients.go:117: } {Get https://api.j7ksp.k8s.p5x.telekom.de/api?timeout=10s: x509: certificate is valid for ingress.local, not api.j7ksp.k8s.p5x.telekom.de}]"
+}
+{
+    "resource": "tenantclients",
+    "stack": "[{/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/operatorkit/resource/wrapper/retryresource/basic_resource.go:52: } {/go/src/github.com/giantswarm/cluster-operator/service/controller/resource/tenantclients/create.go:59: } {/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/k8sclient/clients.go:117: } {Get https://api.pnwd0.k8s.eu-central-1.aws.cps.vodafone.com/api?timeout=10s: context deadline exceeded}]"
+}
+{
+    "resource": "tenantclients",
+    "stack": "[{/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/operatorkit/resource/wrapper/retryresource/basic_resource.go:76: } {/go/src/github.com/giantswarm/cluster-operator/service/controller/resource/tenantclients/delete.go:12: } {/go/src/github.com/giantswarm/cluster-operator/service/controller/resource/tenantclients/resource.go:95: } {/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/k8sclient/clients.go:117: } {Get https://api.j7ksp.k8s.p5x.telekom.de/api?timeout=10s: x509: certificate is valid for ingress.local, not api.j7ksp.k8s.p5x.telekom.de}]"
+}
+{
+    "resource": "tenantclients",
+    "stack": "[{/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/operatorkit/resource/wrapper/retryresource/basic_resource.go:76: } {/go/src/github.com/giantswarm/cluster-operator/service/controller/resource/tenantclients/delete.go:12: } {/go/src/github.com/giantswarm/cluster-operator/service/controller/resource/tenantclients/resource.go:95: } {/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/k8sclient/clients.go:117: } {Get https://api.j7ksp.k8s.p5x.telekom.de/api?timeout=10s: x509: certificate is valid for ingress.local, not api.j7ksp.k8s.p5x.telekom.de}]"
+}
+{
+    "resource": "tenantclients",
+    "stack": "[{/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/operatorkit/resource/wrapper/retryresource/basic_resource.go:76: } {/go/src/github.com/giantswarm/cluster-operator/service/controller/resource/tenantclients/delete.go:12: } {/go/src/github.com/giantswarm/cluster-operator/service/controller/resource/tenantclients/resource.go:95: } {/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/k8sclient/clients.go:117: } {Get https://api.j7ksp.k8s.p5x.telekom.de/api?timeout=10s: x509: certificate is valid for ingress.local, not api.j7ksp.k8s.p5x.telekom.de}]"
+}
+{
+    "resource": "tenantclients",
+    "stack": "[{/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/operatorkit/resource/wrapper/retryresource/basic_resource.go:76: } {/go/src/github.com/giantswarm/cluster-operator/service/controller/resource/tenantclients/delete.go:12: } {/go/src/github.com/giantswarm/cluster-operator/service/controller/resource/tenantclients/resource.go:95: } {/go/src/github.com/giantswarm/cluster-operator/vendor/github.com/giantswarm/k8sclient/clients.go:117: } {Get https://api.j7ksp.k8s.p5x.telekom.de/api?timeout=10s: x509: certificate is valid for ingress.local, not api.j7ksp.k8s.p5x.telekom.de}]"
+}
+{
+    "resource": "tenantclients",
+    "stack" {
+        "annotation": "Get \"https://api.qh99j.k8s.gauss.eu-central-1.aws.gigantic.io/api?timeout=10s\": x509: certificate is valid for ingress.local, not api.qh99j.k8s.gauss.eu-central-1.aws.gigantic.io",
+        "kind": "unknown",
+        "stack" [
+            {
+                "file": "/go/pkg/mod/github.com/giantswarm/k8sclient@v0.2.0/clients.go",
+                "line": 117
+            },
+            {
+                "file": "/go/src/github.com/giantswarm/aws-operator/service/controller/resource/tenantclients/create.go",
+                "line": 61
+            },
+            {
+                "file": "/go/pkg/mod/github.com/giantswarm/operatorkit@v0.2.0/resource/wrapper/retryresource/basic_resource.go",
+                "line": 52
+            }
+        ]
+    }
+}
+{
+    "resource": "tenantclients",
+    "stack" {
+        "annotation": "Get \"https://api.qh99j.k8s.gauss.eu-central-1.aws.gigantic.io/api?timeout=10s\": x509: certificate is valid for ingress.local, not api.qh99j.k8s.gauss.eu-central-1.aws.gigantic.io",
+        "kind": "unknown",
+        "stack" [
+            {
+                "file": "/go/pkg/mod/github.com/giantswarm/k8sclient@v0.2.0/clients.go",
+                "line": 117
+            },
+            {
+                "file": "/go/src/github.com/giantswarm/aws-operator/service/controller/resource/tenantclients/create.go",
+                "line": 61
+            },
+            {
+                "file": "/go/pkg/mod/github.com/giantswarm/operatorkit@v0.2.0/resource/wrapper/retryresource/basic_resource.go",
+                "line": 52
+            }
+        ]
+    }
+}

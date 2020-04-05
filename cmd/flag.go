@@ -6,20 +6,30 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
+
+	"github.com/giantswarm/gg/pkg/config"
+)
+
+const (
+	defaultColour = false
+	defaultGroup  = ""
+	defaultTime   = ""
 )
 
 type flag struct {
+	colour  bool
 	fields  []string
 	group   string
-	output  string
 	selects []string
+	time    string
 }
 
 func (f *flag) Init(cmd *cobra.Command) {
+	cmd.PersistentFlags().BoolVarP(&f.colour, "colour", "c", config.Colour(defaultColour), "Whether to colourize printed output or not.")
 	cmd.PersistentFlags().StringSliceVarP(&f.fields, "field", "f", nil, "Fields the output lines should contain only.")
-	cmd.PersistentFlags().StringVarP(&f.group, "group", "g", "", "Group logs by inserting an empty line after the group end.")
-	cmd.PersistentFlags().StringVarP(&f.output, "output", "o", "json", "Output format, either json or text.")
+	cmd.PersistentFlags().StringVarP(&f.group, "group", "g", config.Group(defaultGroup), "Group logs by inserting an empty line after the group end.")
 	cmd.PersistentFlags().StringSliceVarP(&f.selects, "select", "s", nil, "Select lines based on the given key:val regular expression.")
+	cmd.PersistentFlags().StringVarP(&f.time, "time", "t", config.Time(defaultTime), "Time format used to print timestamps.")
 }
 
 func (f *flag) Validate() error {
@@ -48,16 +58,6 @@ func (f *flag) Validate() error {
 		}
 	}
 
-	// Validate -o/--output flag.
-	{
-		if f.output == "" {
-			return microerror.Maskf(invalidFlagsError, "-o/--output must not be empty")
-		}
-		if f.output != "json" && f.output != "text" {
-			return microerror.Maskf(invalidFlagsError, "-o/--output must either be text or json")
-		}
-	}
-
 	// Validate -s/--select flags.
 	for _, s := range f.selects {
 		split := strings.Split(s, ":")
@@ -76,6 +76,9 @@ func (f *flag) Validate() error {
 			}
 		}
 	}
+
+	// Validate -t/--time flag. Note that time can be empty, which means the
+	// timestamp is not modified.
 
 	return nil
 }

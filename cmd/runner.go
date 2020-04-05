@@ -5,12 +5,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"regexp"
-	"strings"
 
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/cobra"
 
+	"github.com/giantswarm/gg/pkg/colour"
+	"github.com/giantswarm/gg/pkg/featuremap"
 	"github.com/giantswarm/gg/pkg/formatter"
 	"github.com/giantswarm/gg/pkg/matcher"
 	"github.com/giantswarm/gg/pkg/splitter"
@@ -42,21 +42,11 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	var err error
 	var group string
 	var isErr bool
-	var hasNewLine bool
-	var dropStack bool
-
-	// TODO remove with dropping support for legacy microerror stack structures.
-	if containsExp(r.flag.fields, "annotation") && !containsExp(r.flag.fields, "stack") {
-		r.flag.fields = append(r.flag.fields, "stack")
-		dropStack = true
-	}
 
 	scanner := bufio.NewScanner(r.stdin)
 	scanner.Split(splitter.New().Split)
 
 	for scanner.Scan() {
-		l := scanner.Text()
-
 		// Check if the current line of the stream has the expected format of our
 		// JSON log objects. If it does not appear to be valid JSON, we simply print
 		// the line as it is.
@@ -66,16 +56,21 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// already printed, so that further grouping of logs doesn't introduce any
 		// unnecessary padding.
 		{
+			l := scanner.Text()
+
 			if l[0] != '{' {
-				if !hasNewLine {
-					fmt.Fprint(r.stdout, "\n")
-				}
 				fmt.Fprint(r.stdout, l)
-				fmt.Fprint(r.stdout, "\n")
-
-				hasNewLine = true
-
 				continue
+			}
+		}
+
+		var fm *featuremap.FeatureMap
+		{
+			fm = featuremap.New()
+
+			err = fm.UnmarshalJSON(scanner.Bytes())
+			if err != nil {
+				return microerror.Mask(err)
 			}
 		}
 
@@ -84,7 +79,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// in the processing so that relevant information for detection are not
 		// removed before we get the chance to inspect the complete line.
 		{
-			isErr, err = formatter.IsErr(l)
+			isErr, err = formatter.IsErr(fm)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -93,32 +88,13 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// Filter the current line of the stream based on the given expression with
 		// the -f/--field flag. We do not want to print lines that do not have the
 		// fields we want to display.
-		//
-		// TODO we additionally check !isErr when checking for a match which is
-		// because of legacy microerror structures where the annotation is magically
-		// reverse engineered from the legacy stack. Once we do not have to deal
-		// with these legacy structures we can remove the additional check.
 		if len(r.flag.fields) != 0 {
-			match, err := matcher.Match(l, matcher.Exp(r.flag.fields))
+			match, err := matcher.Match(fm, matcher.Exp(r.flag.fields))
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			if !match && !isErr {
-				continue
-			}
-		}
-
-		// Filter errors without stack and annotation fields, in case we are looking
-		// for these fields. We do not want to print logs that do not have fields we
-		// are actually looking for, even if they are errors.
-		if len(r.flag.fields) != 0 {
-			match, err := matcher.Match(l, matcher.ExpWithout(r.flag.fields, "annotation", "stack"))
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			if !match && isErr {
+			if !match {
 				continue
 			}
 		}
@@ -127,7 +103,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// the -g/--group flag. We do not want to print lines that do not have the
 		// fields we want to group by.
 		if r.flag.group != "" {
-			match, err := matcher.Match(l, matcher.Exp([]string{r.flag.group}))
+			match, err := matcher.Match(fm, matcher.Exp([]string{r.flag.group}))
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -140,7 +116,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// Filter the current line of the stream based on the given expression with
 		// the -s/--select flag. We only want to print matching lines.
 		if len(r.flag.selects) != 0 {
-			match, err := matcher.Match(l, r.flag.selects)
+			match, err := matcher.Match(fm, r.flag.selects)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -156,7 +132,7 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// or reconciliation loop. The grouping is simply done by inserting an empty
 		// line.
 		if r.flag.group != "" {
-			value, err := matcher.Value(l, r.flag.group)
+			value, err := matcher.Value(fm, r.flag.group)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -166,15 +142,12 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 				group = value
 			}
 
-			// As soon as we find a new group value we insert an empty line and
-			// remember the new group value.
-			//
-			// Note that a new line is only inserted in case no invalid JSON got
-			// detected. This is to prevent unnecessary extra padding.
+			// As soon as we find a new group value we insert empty lines for visual
+			// separation and remember the new group value.
 			if value != group {
-				if !hasNewLine {
-					fmt.Fprint(r.stdout, "\n")
-				}
+				fmt.Fprint(r.stdout, "\n")
+				fmt.Fprint(r.stdout, "\n")
+				fmt.Fprint(r.stdout, "\n")
 				group = value
 			}
 		}
@@ -183,27 +156,23 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// the -f/--field flag. We only want to print lines containing given
 		// fields.
 		if len(r.flag.fields) != 0 {
-			newLine, err := formatter.Fields(l, r.flag.fields)
+			fm, err = formatter.Fields(fm, r.flag.fields)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			if strings.HasPrefix(newLine, "{}") {
+			if fm.Len() == 0 {
 				continue
 			}
-
-			l = newLine
 		}
 
-		// Transform the current line of the stream based on the given fields with
-		// the -o/--output flag. We only want to print selected fields.
-		{
-			newLine, err := formatter.Output(l, r.flag.output)
+		// Replace the existing timestamps with the given time format. This should
+		// make it easier for humans to compare the times at which logs got emitted.
+		if r.flag.time != "" {
+			fm, err = formatter.Time(fm, r.flag.time)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-
-			l = newLine
 		}
 
 		// Transform the current line of the stream so that it is colourized.
@@ -212,30 +181,37 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 		// order to make them colorful. This implies that the JSON strings do not
 		// contain valid JSON objects anymore. Therefore all JSON object related
 		// operations must have been done at this point.
+		var l string
 		if isErr {
-			newLine, err := formatter.Error(l, r.flag.output, r.flag.fields, dropStack)
+			var p colour.Palette
+			if r.flag.colour {
+				p = colour.Palette{Key: colour.DarkRed, Value: colour.LightRed}
+			} else {
+				p = colour.NewNoColourPalette()
+			}
+
+			l, err = formatter.IndentWithColour(fm, p)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-
-			l = newLine
 		} else {
-			newLine, err := formatter.Colour(l, r.flag.output)
+			var p colour.Palette
+			if r.flag.colour {
+				p = colour.Palette{Key: colour.DarkGreen, Value: colour.LightGreen}
+			} else {
+				p = colour.NewNoColourPalette()
+			}
+
+			l, err = formatter.IndentWithColour(fm, p)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-
-			l = newLine
 		}
 
 		// Finally we print the current line of the stream based on its processed
 		// selection and transformation.
-		//
-		// Note that we reset hasNewLine again to start all over with the detection
-		// of extra padding. This is basically for eye candy reasons.
 		{
-			hasNewLine = false
-			fmt.Fprint(r.stdout, l)
+			fmt.Fprint(r.stdout, l+"\n")
 		}
 	}
 
@@ -245,14 +221,4 @@ func (r *runner) run(ctx context.Context, cmd *cobra.Command, args []string) err
 	}
 
 	return nil
-}
-
-func containsExp(fields []string, field string) bool {
-	for _, f := range fields {
-		if regexp.MustCompile(f).MatchString(field) {
-			return true
-		}
-	}
-
-	return false
 }

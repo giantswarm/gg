@@ -3,7 +3,16 @@ package cmd
 var example = `    The following examples make use of a basic.json file which contains JSON
     logs where each log line is a single JSON object. You can find the
     basic.json file in ./cmd/fixture/ along with other test fixtures used for
-    golden file tests.
+    golden file tests. Further note that you can configure flag defaults via a
+    config file.
+
+        ~/.config/gg/config.yaml
+
+    Config file defaults are supported for the following flags.
+
+        -c/--colour
+        -g/--group
+        -t/--time
 
     Select all logs where any key matches "obj" and its associated value matches
     "qihx8". This can be used to e.g. grep for all logs related to Tenant
@@ -34,6 +43,11 @@ var example = `    The following examples make use of a basic.json file which co
 
         cat basic.json | gg -s obj:qihx8 -s res:dra -f tim,mes -g loo
 
-    Display the list of resources executed for a given CR.
+    Select all error logs and display their caller and stack.
 
-        cat basic.json | gg -s obj:qihx8 -s con:mac -f res -o text -g loo | uniq`
+        cat basic.json | gg -s lev:err -f cal,sta
+
+    Display log messages of drainer resources and format their timestamp using
+    to the given format.
+
+        cat basic.json | gg -s obj:qihx8 -s res:dra -f res,mes,tim -t 15:04:05`

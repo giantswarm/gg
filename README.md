@@ -21,7 +21,16 @@ Examples:
     The following examples make use of a basic.json file which contains JSON
     logs where each log line is a single JSON object. You can find the
     basic.json file in ./cmd/fixture/ along with other test fixtures used for
-    golden file tests.
+    golden file tests. Further note that you can configure flag defaults via a
+    config file.
+
+        ~/.config/gg/config.yaml
+
+    Config file defaults are supported for the following flags.
+
+        -c/--colour
+        -g/--group
+        -t/--time
 
     Select all logs where any key matches "obj" and its associated value matches
     "qihx8". This can be used to e.g. grep for all logs related to Tenant
@@ -52,20 +61,26 @@ Examples:
 
         cat basic.json | gg -s obj:qihx8 -s res:dra -f tim,mes -g loo
 
-    Display the list of resources executed for a given CR.
+    Select all error logs and display their caller and stack.
 
-        cat basic.json | gg -s obj:qihx8 -s con:mac -f res -o text -g loo | uniq
+        cat basic.json | gg -s lev:err -f cal,sta
+
+    Display log messages of drainer resources and format their timestamp using
+    to the given format.
+
+        cat basic.json | gg -s obj:qihx8 -s res:dra -f res,mes,tim -t 15:04:05
 
 Available Commands:
   help        Help about any command
   version     Print version information.
 
 Flags:
+  -c, --colour           Whether to colourize printed output or not.
   -f, --field strings    Fields the output lines should contain only.
   -g, --group string     Group logs by inserting an empty line after the group end.
   -h, --help             help for gg
-  -o, --output string    Output format, either json or text. (default "json")
   -s, --select strings   Select lines based on the given key:val regular expression.
+  -t, --time string      Time format used to print timestamps.
 
 Use "gg [command] --help" for more information about a command.
 ```

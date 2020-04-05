@@ -1,4 +1,4 @@
-package formatter
+package featuremap
 
 import "github.com/giantswarm/microerror"
 
