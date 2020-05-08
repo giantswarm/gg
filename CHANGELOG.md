@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+
+## [0.1.0] - 2020-05-08
+
 - Initialize repository.
 - Implement grepping using regular expressions via the `-g` or `--grep` flag.
 - Make multiple fuzzy grepping generic.
@@ -23,4 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/gg/tree/master
+[Unreleased]: https://github.com/giantswarm/gg/compare/v0.1.0...HEAD
+
+[0.2.0]: https://github.com/giantswarm/gg/compare/v0.1.0...v0.2.0
+
+[0.1.0]: https://github.com/giantswarm/gg/releases/tag/v0.1.0
