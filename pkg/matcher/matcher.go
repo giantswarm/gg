@@ -48,7 +48,7 @@ func Match(fm *featuremap.FeatureMap, selects []string) (bool, error) {
 			d[pair[0].String()]++
 		}
 
-		for k, _ := range d {
+		for k := range d {
 			d[k]--
 			duplicates += d[k]
 		}
