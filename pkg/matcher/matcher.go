@@ -37,15 +37,32 @@ func Match(fm *featuremap.FeatureMap, selects []string) (bool, error) {
 		}
 	}
 
-	var matched int
-	for _, pair := range expressions {
-		matches := pairMatchesMapping(pair, fm)
-		if matches {
-			matched++
+	// We calculate the duplicates of expressions given so that we can subtract
+	// them from the matching results. This is useful when having a select query
+	// to show logs of two different resource handlers e.g. using -s res:acc -s
+	// res:asg. See also golden file test 12.
+	var duplicates int
+	{
+		d := map[string]int{}
+		for _, pair := range expressions {
+			d[pair[0].String()]++
+		}
+
+		for k, _ := range d {
+			d[k]--
+			duplicates += d[k]
 		}
 	}
 
-	if matched == len(expressions) {
+	var matches int
+	for _, pair := range expressions {
+		ok := pairMatchesMapping(pair, fm)
+		if ok {
+			matches++
+		}
+	}
+
+	if matches == len(expressions)-duplicates {
 		return true, nil
 	}
 

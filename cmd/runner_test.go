@@ -202,6 +202,22 @@ func Test_Cmd_run(t *testing.T) {
 			},
 			fixture: "fields.json",
 		},
+		{
+			name: "case 12, two resource handlers",
+			flag: &flag{
+				colour: false,
+				fields: []string{
+					"res",
+					"mes",
+				},
+				selects: []string{
+					"res:accountid",
+					"res:asgstatus",
+				},
+				time: customTime,
+			},
+			fixture: "basic.json",
+		},
 	}
 
 	for i, tc := range testCases {
