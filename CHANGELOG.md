@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implicitly filter based on given fields and group.
 - Add golden file tests to automatically verify certain features.
 - Improve error stack handling.
+- Select same key expressions.
 
 
 

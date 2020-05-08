@@ -65,6 +65,11 @@ Examples:
 
         cat basic.json | gg -s lev:err -f cal,sta
 
+    Select all logs of two different resource handlers. This is to show the
+    s3object and tccpn resource handler logs together.
+
+        cat basic.json | gg -s obj:8ztu4 -s con:plane -s res:s3obj -s res:tccpn\$ -f res,mes -g loo
+
     Display log messages of drainer resources and format their timestamp using
     to the given format.
 

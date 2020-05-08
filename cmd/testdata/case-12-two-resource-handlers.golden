@@ -1,0 +1,88 @@
+{
+    "resource": "accountid",
+    "message": "finding the control plane's AWS account ID"
+}
+{
+    "resource": "accountid",
+    "message": "found the control plane's AWS account ID `075252227282`"
+}
+{
+    "resource": "accountid",
+    "message": "finding the tenant cluster's AWS account ID"
+}
+{
+    "resource": "asgstatus",
+    "message": "finding ASG `cluster-hixh7-tcnp-qihx8-NodePoolAutoScalingGroup-1HLVK01JLHTHO`"
+}
+{
+    "resource": "accountid",
+    "message": "found the tenant cluster's AWS account ID `075252227282`"
+}
+{
+    "resource": "asgstatus",
+    "message": "found ASG `cluster-hixh7-tcnp-qihx8-NodePoolAutoScalingGroup-1HLVK01JLHTHO`"
+}
+{
+    "resource": "asgstatus",
+    "message": "desired capacity of `cluster-hixh7-tcnp-qihx8-NodePoolAutoScalingGroup-1HLVK01JLHTHO` is 6"
+}
+{
+    "resource": "asgstatus",
+    "message": "max size of `cluster-hixh7-tcnp-qihx8-NodePoolAutoScalingGroup-1HLVK01JLHTHO` is 10"
+}
+{
+    "resource": "asgstatus",
+    "message": "min size of `cluster-hixh7-tcnp-qihx8-NodePoolAutoScalingGroup-1HLVK01JLHTHO` is 2"
+}
+{
+    "resource": "accountid",
+    "message": "finding the control plane's AWS account ID"
+}
+{
+    "resource": "accountid",
+    "message": "found the control plane's AWS account ID `075252227282`"
+}
+{
+    "resource": "accountid",
+    "message": "finding the tenant cluster's AWS account ID"
+}
+{
+    "resource": "accountid",
+    "message": "found the tenant cluster's AWS account ID `075252227282`"
+}
+{
+    "resource": "accountid",
+    "message": "finding the control plane's AWS account ID"
+}
+{
+    "resource": "accountid",
+    "message": "found the control plane's AWS account ID `075252227282`"
+}
+{
+    "resource": "accountid",
+    "message": "finding the tenant cluster's AWS account ID"
+}
+{
+    "resource": "asgstatus",
+    "message": "finding ASG `cluster-hixh7-tcnp-qihx8-NodePoolAutoScalingGroup-1HLVK01JLHTHO`"
+}
+{
+    "resource": "accountid",
+    "message": "found the tenant cluster's AWS account ID `075252227282`"
+}
+{
+    "resource": "asgstatus",
+    "message": "found ASG `cluster-hixh7-tcnp-qihx8-NodePoolAutoScalingGroup-1HLVK01JLHTHO`"
+}
+{
+    "resource": "asgstatus",
+    "message": "desired capacity of `cluster-hixh7-tcnp-qihx8-NodePoolAutoScalingGroup-1HLVK01JLHTHO` is 6"
+}
+{
+    "resource": "asgstatus",
+    "message": "max size of `cluster-hixh7-tcnp-qihx8-NodePoolAutoScalingGroup-1HLVK01JLHTHO` is 10"
+}
+{
+    "resource": "asgstatus",
+    "message": "min size of `cluster-hixh7-tcnp-qihx8-NodePoolAutoScalingGroup-1HLVK01JLHTHO` is 2"
+}
